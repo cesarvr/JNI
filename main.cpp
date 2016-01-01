@@ -1,14 +1,16 @@
 #include<jni.h>
 #include <iostream>
 
+class A {};
+
 template <typename JObject, typename Name>
 void check(JObject &jobject, Name &name) {
   auto instName = (name == 0)? "[no name]": name;  
 
-  if(jobject !=0){
+  if(jobject !=0 && jobject != nullptr){
     std::cout << instName <<  " <- found. \n" << std::endl; 
   }else{
-    std::cout << "Error  \n" << instName << " not found !! " << std::endl;
+    std::cout << "Error: " << instName << " not found !! " << std::endl;
   }
 }
 
@@ -26,20 +28,27 @@ void loadClass(E &env, Route route, JavaObject& java) {
     check(java.clazz, route);
 
     java.constructor = env->GetMethodID(java.clazz, "<init>", "()V"); 
-    check(java.clazz, "Class");
     check(java.constructor, "Constructor");
 
     java.object = env->NewObject(java.clazz, java.constructor);
     check(java.object, "JObject");
     java.env = env;
+
+
+    auto methodSignature = env->GetMethodID(java.clazz, "getSalute", "()Ljava/lang/String;"); 
+    check(methodSignature, "callMethod::GetMethodID");
+ //
 }
 
 template <typename JObject, typename Argument> 
 std::string callMethod(JObject object, Argument& argument) {
 
-  auto methodSignature = object.env->GetMethodID(object.clazz, argument, "()Ljava/lang/String"); 
-  jobject ret = dynamic_cast<jobject>(object.env->CallObjectMethod(object.clazz, methodSignature, 0)); 
-  const char *s = object.env->GetStringUTFChars(dynamic_cast<jstring>(ret), false);
+  auto methodSignature = object.env->GetMethodID(object.clazz, "getSalute", "()Ljava/lang/String;"); 
+
+  check(methodSignature, "callMethod::GetMethodID");
+  auto ret = (jstring)object.env->CallObjectMethod(object.object, methodSignature, 0); 
+
+  const char *s = object.env->GetStringUTFChars(ret, (jboolean*)0);
   std::string msg(s);
   return msg;
 }
@@ -60,8 +69,6 @@ int main(int argc, char** argv) {
   vm_args.options = options; 
  
   long status = JNI_CreateJavaVM(&jvm, (void**)&env, &vm_args);
-
-
 
 
   if(status != JNI_ERR){
