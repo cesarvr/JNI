@@ -3,6 +3,19 @@
 
 class A {};
 
+
+
+template <typename JObject, typename Name, typename JEnv>
+void check(JObject &jobject, Name &name, JEnv& env) { 
+  if(env->ExceptionCheck()){
+    env->ExceptionDescribe();
+  }
+
+  check(jobject, name);
+}
+ 
+
+
 template <typename JObject, typename Name>
 void check(JObject &jobject, Name &name) {
   auto instName = (name == 0)? "[no name]": name;  
@@ -11,6 +24,7 @@ void check(JObject &jobject, Name &name) {
     std::cout << instName <<  " <- found. \n" << std::endl; 
   }else{
     std::cout << "Error: " << instName << " not found !! " << std::endl;
+    exit(1);
   }
 }
 
@@ -24,8 +38,9 @@ struct JavaClazz {
 template <typename E, typename Route, typename JavaObject >
 void loadClass(E &env, Route route, JavaObject& java) {
 
+    std::cout << "searching class: "<< route  << std::endl;
     java.clazz = env->FindClass(route); //("com/example/Test");
-    check(java.clazz, route);
+    check(java.clazz, route, env);
 
     java.constructor = env->GetMethodID(java.clazz, "<init>", "()V"); 
     check(java.constructor, "Constructor");
@@ -33,27 +48,67 @@ void loadClass(E &env, Route route, JavaObject& java) {
     java.object = env->NewObject(java.clazz, java.constructor);
     check(java.object, "JObject");
     java.env = env;
+}
 
-
-    auto methodSignature = env->GetMethodID(java.clazz, "getSalute", "()Ljava/lang/String;"); 
-    check(methodSignature, "callMethod::GetMethodID");
- //
+template <typename jObject>
+std::string getValue(jObject o, jstring str ) {
+  
+  const char *s = o.env->GetStringUTFChars(str, (jboolean*)0);
+  std::string tmp(s);
+  return tmp; 
 }
 
 template <typename JObject, typename Argument> 
 std::string callMethod(JObject object, Argument& argument) {
 
-  auto methodSignature = object.env->GetMethodID(object.clazz, "getSalute", "()Ljava/lang/String;"); 
+
+  auto methodSignature = object.env->GetMethodID(object.clazz, argument, "()Ljava/lang/String;"); 
 
   check(methodSignature, "callMethod::GetMethodID");
   auto ret = (jstring)object.env->CallObjectMethod(object.object, methodSignature, 0); 
+    
+  
+  return getValue(object, ret);
+}
+/*
+template <typename JObject>
+jstring make
+*/
 
-  const char *s = object.env->GetStringUTFChars(ret, (jboolean*)0);
-  std::string msg(s);
-  return msg;
+
+
+
+
+template <typename JObject, typename Argument> 
+void HTML2PDFService(JObject object, Argument& argument, std::string value) {
+  
+  jstring jstr = object.env->NewStringUTF( value.c_str() );
+  std::cout << "value-> " << value << std::endl;
+  std::cout << "Args-> " << argument << std::endl;
+
+  auto methodSignature = object.env->GetMethodID(object.clazz, argument, "(Ljava/lang/String;)V"); 
+  check(methodSignature, "callMethodVoid::Method ", object.env );
+  object.env->CallObjectMethod(object.object, methodSignature, jstr); 
+}
+
+void helloWorld(JNIEnv *env){
+
+ JavaClazz jclazz; 
+ loadClass(env, "com/example/Test", jclazz);
+
+ auto ret = callMethod(jclazz, "getSalute");
+ std::cout << "[JVM] -> Test.getSalute(): " << ret << std::endl;
 }
 
 
+void pdfItext(JNIEnv *env){
+
+ JavaClazz jclazz; 
+ loadClass(env, "pdf/P2HService", jclazz);
+
+ HTML2PDFService(jclazz, "html2pdf", "<html><body> This is my Project </body></html>");
+
+}
 
 int main(int argc, char** argv) {
 
@@ -65,7 +120,8 @@ int main(int argc, char** argv) {
   vm_args.version = JNI_VERSION_1_6;
   vm_args.nOptions = 1;
 
-  options[0].optionString = "-Djava.class.path=.:./";
+  char path[] = "-Djava.class.path=.:./:./libs/itext-5.5.8/itextpdf-5.5.8.jar:./libs/itext-5.5.8/xmlworker-5.5.8.jar";  // "-Djava.class.path=.";      // ./libs/itext-5.5.8/itext-5.5.8.jar";  
+  options[0].optionString = path; 
   vm_args.options = options; 
  
   long status = JNI_CreateJavaVM(&jvm, (void**)&env, &vm_args);
@@ -73,16 +129,11 @@ int main(int argc, char** argv) {
 
   if(status != JNI_ERR){
 
-   JavaClazz jclazz; 
-   loadClass(env, "com/example/Test", jclazz);
-   auto ret = callMethod(jclazz, "getSalute");
-   std::cout << "JVM Ret:" << ret << std::endl;
-   // check(clazz, "Test");
+    //helloWorld(env);
+    pdfItext(env);
 
 
-    //auto mid = env->GetStaticMethodID(clazz, "mymain", "()V");
-
-
+    std::cout << "\n \n \n" << "================ \n" ;
     std::cout << "destroy VM" << std::endl;
     jvm->DestroyJavaVM();
   }else{
