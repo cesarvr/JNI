@@ -1,0 +1,1 @@
+cmd_Release/obj.target/jvm.node := g++ -shared -pthread -rdynamic -m64  -Wl,-soname=jvm.node -o Release/obj.target/jvm.node -Wl,--start-group Release/obj.target/jvm/jvm.o Release/obj.target/jvm/include/jvm_handler.o -Wl,--end-group -Ljava/jre/lib/amd64/server/ -Linclude/

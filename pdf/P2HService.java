@@ -1,5 +1,7 @@
 package pdf;
+
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -14,19 +16,22 @@ import com.itextpdf.tool.xml.XMLWorkerHelper;
 
 public class P2HService {
 
-  public void html2pdf(String htmlText) {
-    OutputStream file;
+  public byte[] html2pdf(String str) {
+    ByteArrayOutputStream ostream = null;
+    
     try {
-      file = new FileOutputStream(new File("Test.pdf"));
-
+      ostream = new ByteArrayOutputStream();
+      
       Document document = new Document();
-      PdfWriter writer = PdfWriter.getInstance(document, file);
+      PdfWriter writer = PdfWriter.getInstance(document, ostream);
       document.open();
-      InputStream is = new ByteArrayInputStream(htmlText.getBytes());
+      InputStream is = new ByteArrayInputStream(str.getBytes());
       XMLWorkerHelper.getInstance().parseXHtml(writer, document, is);
       document.close();
-      file.close();
+      ostream.close();
 
+      return ostream.toByteArray();
+      
     } catch (FileNotFoundException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
@@ -37,10 +42,13 @@ public class P2HService {
       // TODO Auto-generated catch block
       e.printStackTrace();
     }
+    
+    return ostream.toByteArray();
   }
 
   public static void main(String[] args) {
     System.out.println("Generating PDF");
-    new P2HService().html2pdf("");
+    new P2HService().html2pdf("<html><body> This is my Project </body></html>");
   }
+
 }
