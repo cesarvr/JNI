@@ -22,7 +22,8 @@ Release/obj.target/jvm/jvm.o: ../jvm.cc ../node_modules/nan/nan.h \
  ../node_modules/nan/nan_persistent_pre_12_inl.h \
  ../node_modules/nan/nan_weak.h ../node_modules/nan/nan_object_wrap.h \
  ../node_modules/nan/nan_typedarray_contents.h ../java/include/jni.h \
- ../java/include/linux/jni_md.h ../include/jvm_handler.h
+ ../java/include/linux/jni_md.h ../include/jvm_handler.h \
+ ../include/jvm_invocation.h ../include/jvm_handler.h
 ../jvm.cc:
 ../node_modules/nan/nan.h:
 /home/cesar/.node-gyp/0.10.30/src/node_version.h:
@@ -50,4 +51,6 @@ Release/obj.target/jvm/jvm.o: ../jvm.cc ../node_modules/nan/nan.h \
 ../node_modules/nan/nan_typedarray_contents.h:
 ../java/include/jni.h:
 ../java/include/linux/jni_md.h:
+../include/jvm_handler.h:
+../include/jvm_invocation.h:
 ../include/jvm_handler.h:

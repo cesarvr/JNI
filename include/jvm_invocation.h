@@ -5,8 +5,20 @@
 #include <jni.h>
 #include <nan.h>
 
+#include <sstream>
+#include <string>
+
+
+
+
 #include "jvm_handler.h"
 
+using JSArgument = const Nan::FunctionCallbackInfo<v8::Value>;
+
+struct VMError {
+  std::string errorMessage;
+  int errorCode; 
+};
 
 struct JavaObject{
     jclass member;
@@ -15,13 +27,26 @@ struct JavaObject{
 };
 
 
+
 class JVMInvoke {
-protected:
-    JNIEnv *env;
+private:
+  void WriteError(VMError& error); 
+
+  template <typename JObject, typename Name>
+  void Check(JObject& jobject, Name& name) {
+    auto instName = (name == 0)? "[no name]": name;  
+
+    if(jobject ==0 || jobject == nullptr){
+      std::stringstream msg;
+      msg << "Error: " << instName << "Not found or Null"; 
+
+      throw VMError { msg.str(), 1 }; 
+    }
+  };
+
 
 public:
-    void Init(JVMLoader loader);
-    JavaObject CreateObject( std::string qClassName );
+  std::string CreateObject( JVMLoader loader, std::string qClassName );
 };
 
 #endif /* JVM_Invocation */
