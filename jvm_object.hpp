@@ -11,16 +11,15 @@
 
 #include "jvm_field.hpp"
 #include "jvm_global.hpp"
-
+#include "jvm_argument.hpp"
 
 
 struct JavaMethod {
     std::string name;
     std::string returnType;
-    std::vector <std::string> arguments;
+    JavaArguments arguments;
     jmethodID methodPTR;
 };
-
 
 class JavaClass {
     
@@ -44,22 +43,25 @@ public:
     
     void SetMethods(jobjectArray methods);
     
-    
-    
     JavaMethod LookupMethod(std::string name);
-    
-    
-    
+
     template <typename R, typename Arg>
     std::string CallJavaMethod(std::string methodName, std::vector<Arg> arg){
         try{
             JavaMethod method = LookupMethod(methodName);
             jstring str;
-            if(method.arguments.size() == 0){
+            if(method.arguments.IsVoid()){
                 str = Field::MakeCall<jstring>(loader, classObject , method.methodPTR);
             }else {
-                 
-                str = Field::MakeCallWithArguments<jstring>(loader, classObject , method.methodPTR,  );
+                
+                
+                std::string param = "Bjarne";
+                
+                jvalue arg[1];
+                
+                arg[0].l = loader.GetJNIEnviorment()->NewStringUTF(param.c_str());
+                
+                str = Field::MakeCallWithArguments<jstring, jvalue>(loader, classObject , method.methodPTR, arg );
             }
             return Util::GetStringFromJVM(loader.GetJNIEnviorment(), str);
             
@@ -68,11 +70,6 @@ public:
         }
         return "not found";
     };
-    
 };
-
-
-
-
 
 #endif /* jvm_object_hpp */

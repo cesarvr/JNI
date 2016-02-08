@@ -8,6 +8,7 @@
 
 #include "jvm_object.hpp"
 
+
 JavaClass::JavaClass(std::string _className,
                      jobject _classObject,
                      JVMLoader _loader ):   name(_className),
@@ -37,7 +38,6 @@ JavaClass JavaClass::CreateObject(JVMLoader loader, std::string className) {
                                                               "getMethods",
                                                               Util::ReturnArrayOf( METHOD_CLASS ),
                                                               ClassObj );
-        
         JavaClass clazz(className, classObject, loader);
         clazz.SetMethods(methods);
         
@@ -62,15 +62,17 @@ void JavaClass::SetMethods(jobjectArray methods) {
         JavaMethod m;
         
         m.name = Field::GetName(loader, object);
+        std::cout << "->" << m.name << std::endl;
         m.returnType = Field::GetReturnType(loader, object);
-        m.arguments = Field::GetParameters(loader, object);
+        m.arguments = JavaArguments( Field::GetParameters(loader, object) );
         m.methodPTR = loader.GetJNIEnviorment()->FromReflectedMethod(object);
+        
+        m.arguments.CheckInfo();
         
         return m;
     };
     
     Methods = Util::IterateJObjectArray< Interface, JavaMethod >(loader, methods, Fn );
-
 };
 
 JavaMethod JavaClass::LookupMethod(std::string name) {

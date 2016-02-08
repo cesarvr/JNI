@@ -94,14 +94,14 @@ public:
     static RET MakeCallWithArguments(JVMLoader loader,
                                      jobject java_object,
                                      jmethodID methodID,
-                                     jobject arg) {
+                                     Args* arg) {
         
         
         
         auto env = loader.GetJNIEnviorment();
         
         try {
-            return (RET) env->CallObjectMethod( java_object , methodID, arg );
+            return (RET) env->CallObjectMethodA( java_object , methodID, arg );
             
         }catch(VMError &error){
             env->ExceptionDescribe();
@@ -179,10 +179,11 @@ public:
           
             
              auto tmp = Util::IterateJObjectArray<M, std::string>(loader, objectArrayType , Fn );
-            
+           
+            /*
             for (auto x: tmp) {
                 std::cout << "->" << x << std::endl;
-            }
+            }*/
             
             return tmp;
             
