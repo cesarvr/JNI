@@ -90,28 +90,23 @@ public:
 
     };
     
-    template <typename RET, typename Args>
+    template <typename RET>
     static RET MakeCallWithArguments(JVMLoader loader,
                                      jobject java_object,
                                      jmethodID methodID,
-                                     Args* arg) {
-        
-        
+                                     std::unique_ptr<jvalue[]> args) {
         
         auto env = loader.GetJNIEnviorment();
         
         try {
-            return (RET) env->CallObjectMethodA( java_object , methodID, arg );
+            return (RET) env->CallObjectMethodA( java_object , methodID, args.get() );
             
         }catch(VMError &error){
             env->ExceptionDescribe();
             throw error;
         }
-        
     };
 
-    
-   
     template <typename T>
     static std::string GetName( JVMLoader loader, T& reflectObject ) {
    
@@ -178,13 +173,8 @@ public:
             
           
             
-             auto tmp = Util::IterateJObjectArray<M, std::string>(loader, objectArrayType , Fn );
+            auto tmp = Util::IterateJObjectArray<M, std::string>(loader, objectArrayType , Fn );
            
-            /*
-            for (auto x: tmp) {
-                std::cout << "->" << x << std::endl;
-            }*/
-            
             return tmp;
             
             

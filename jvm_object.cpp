@@ -46,7 +46,6 @@ JavaClass JavaClass::CreateObject(JVMLoader loader, std::string className) {
         JavaClass empty;
         return empty;
     }
-    
 };
 
 
@@ -87,45 +86,6 @@ JavaMethod JavaClass::LookupMethod(std::string name) {
 };
 
 
-/*
- void JavaClass::AddMethod(JavaMethod Method) {
- 
- methods.push_back(Method);
- };
- 
- 
- 
- */
-/*
- std::string JavaClass::Call(JVMLoader loader, std::string methodName, std::vector<std::string> arguments) {
- 
- try {
- auto method = LookupMethod(methodName);
- auto returnType = Util::GetJavaReturnType(method.returnType);
- 
- VLOG("method: "+ method.name);
- VLOG("returnType: "+ returnType);
- 
- if (returnType == STRING_RETURN_TYPE) {
- jstring tmp = Field::CallMethod<jstring>(loader, javaObject, method.reflectiveMethod);
- 
- return Util::GetStringFromJVM(loader.GetJNIEnviorment(), tmp);
- }
- 
- } catch (VMError error) {
- throw error;
- }
- 
- return "null";
- }
- */
-/*
- const std::vector<JavaMethod>& JavaClass::GetMethods() {
- 
- return methods;
- }
- 
- */
 
 
 
