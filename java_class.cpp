@@ -6,7 +6,7 @@
 //  Copyright © 2016 Cesar Valdez. All rights reserved.
 //
 
-#include "jvm_object.hpp"
+#include "java_class.hpp"
 
 
 JavaClass::JavaClass(std::string _className,
@@ -62,8 +62,8 @@ void JavaClass::SetMethods(jobjectArray methods) {
         
         m.name = Field::GetName(loader, object);
         std::cout << "->" << m.name << std::endl;
-        m.returnType = Field::GetReturnType(loader, object);
-        m.arguments = JavaArguments( Field::GetParameters(loader, object) );
+        m.returnType = JavaReturn( Field::GetReturnType(loader, object) );
+        m.arguments =  JavaArguments( Field::GetParameters(loader, object) );
         m.methodPTR = loader.GetJNIEnviorment()->FromReflectedMethod(object);
         
         m.arguments.CheckInfo();

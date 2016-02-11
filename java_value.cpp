@@ -6,12 +6,12 @@
 //  Copyright © 2016 Cesar Valdez. All rights reserved.
 //
 
-#include "jvm_type.hpp"
+#include "java_value.hpp"
 
 
 JavaValue::JavaValue(std::string value) {
     //field = value;
-    std::vector<char> tmp(value.begin(), value.end());
+    std::vector<unsigned char> tmp(value.begin(), value.end());
     bytes = tmp;
     type=JVMType::String;
 };
@@ -26,9 +26,19 @@ JavaValue::JavaValue(int value) {
     type=JVMType::Integer;
 };
 
+JavaValue::JavaValue(std::vector<unsigned char> data) {
+    bytes = data;
+    type=JVMType::ByteArray;
+};
+
+
+std::vector<unsigned char> JavaValue::getArrayValue(){
+    if( !IsArray() ) throw VMError{ "Error: incompatible data. (expected Array)", 05};
+    return bytes;
+};
 
 int JavaValue::getIntValue(){
-    if( !IsInteger() ) throw VMError{ "Error: incompatible data. (expected Integer)", 01};
+    if( !IsInteger() ) throw VMError{ "Error: incompatible data. (expected Integer)", 04};
     return (int) bytes[0];
 };
 

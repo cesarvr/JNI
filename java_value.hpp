@@ -12,28 +12,33 @@
 #include "jvm_global.hpp"
 
 
-enum class JVMType { String, Integer, Float };
+enum class JVMType { String, Integer, Float, ByteArray };
 
 
 class JavaValue {
     JVMType type;
-    std::vector<char> bytes;
+    std::vector<unsigned char> bytes;
     
 public:
     
+    JavaValue(){};
     JavaValue(std::string value);
     JavaValue(float value);
     JavaValue(int value);
+    JavaValue(std::vector<unsigned char> data);
     
     
     bool IsString(){  return type==JVMType::String; };
     bool IsInteger(){ return type==JVMType::Integer; };
     bool IsFloat(){   return type==JVMType::Float; };
-    
+    bool IsArray(){   return type==JVMType::ByteArray; }
+    bool IsUndefined() { return IsString() || IsInteger() || IsFloat() || IsArray();  };
     
     int getIntValue();
     
     float getFloatValue();
+    
+    std::vector<unsigned char> getArrayValue();
     
     std::string getStringValue();
     

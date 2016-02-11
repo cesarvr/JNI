@@ -20,6 +20,17 @@
 #include <sstream>
 #include <vector>
 
+const std::string METHOD_CLASS("java/lang/reflect/Method");
+const std::string JAVA_CLASS("java/lang/Class");
+const std::string JAVA_STRING_CLASS("java.lang.String");
+
+
+const std::string STRING_RETURN_TYPE("()Ljava/lang/String;");
+const std::string CLASS_MOD_RETURN_TYPE("()Ljava/lang/Class;");
+const std::string CLASS_ARRAY("()[Ljava/lang/Class;");
+
+const std::string CLASS_DEFAULT_CTS("<init>");
+const std::string VOID_RETURN("()V");
 
 struct VMError {
     std::string errorMessage;

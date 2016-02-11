@@ -12,14 +12,14 @@
 #include "jvm_reflection.hpp"
 #include "jvm_global.hpp"
 #include "jvm_argument.hpp"
+#include "jvm_return.hpp"
 
 
 
 struct JavaMethod {
     std::string name;
-    std::string returnType;
+    JavaReturn returnType;
     JavaArguments arguments;
-    
     jmethodID methodPTR;
 };
 
@@ -47,25 +47,23 @@ public:
     
     JavaMethod LookupMethod(std::string name);
 
-    template <typename R>
-    std::string CallJavaMethod(std::string methodName, std::vector<JavaValue> arg = {}){
+
+    JavaValue Method(std::string methodName, std::vector<JavaValue> arg = {}){
         try{
             JavaMethod method = LookupMethod(methodName);
-            jstring str;
-            if(method.arguments.IsVoid()){
-                str = Field::MakeCall<jstring>(loader, classObject , method.methodPTR);
-            }else {
-                str = Field::MakeCallWithArguments<jstring>(loader,
+
+            auto jniObject =  Field::MakeCallWithArguments<jobject>(loader,
                                                             classObject ,
                                                             method.methodPTR,
                                                             method.arguments.GetArguments(loader, arg) );
-            }
-            return Util::GetStringFromJVM(loader.GetJNIEnviorment(), str);
+
+            return method.returnType.GetValue(loader, jniObject);
             
         }catch(VMError& error) {
             throw error;
         }
-        return "not found";
+        
+        return JavaValue();
     };
 };
 

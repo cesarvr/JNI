@@ -15,15 +15,7 @@
 #include "jvm_util.hpp"
 
 
-const std::string METHOD_CLASS("java/lang/reflect/Method");
-const std::string JAVA_CLASS("java/lang/Class");
 
-const std::string STRING_RETURN_TYPE("()Ljava/lang/String;");
-const std::string CLASS_MOD_RETURN_TYPE("()Ljava/lang/Class;");
-const std::string CLASS_ARRAY("()[Ljava/lang/Class;");
-
-const std::string CLASS_DEFAULT_CTS("<init>");
-const std::string VOID_RETURN("()V");
 
 
 class Field {
@@ -40,10 +32,10 @@ public:
             Util::Check(member, className);
             
             auto constructor = env->GetMethodID( member, CLASS_DEFAULT_CTS.c_str() , VOID_RETURN.c_str() );
-            Util::Check( constructor, "Constructor" );
+            Util::Check( constructor, "Constructor: "+ className );
             
             auto object = env->NewObject( member, constructor );
-            Util::Check( object, "Object" );
+            Util::Check( object, "Object: "+ className );
         
             return object;
         } catch ( VMError& error ) {
@@ -74,28 +66,12 @@ public:
     };
     
     template <typename RET>
-    static RET MakeCall(JVMLoader loader, jobject java_object, jmethodID methodID) {
-       
-        
-        
-        auto env = loader.GetJNIEnviorment();
-        
-        try {
-            return (RET) env->CallObjectMethod( java_object , methodID );
-            
-        }catch(VMError &error){
-            env->ExceptionDescribe();
-            throw error;
-        }
-
-    };
-    
-    template <typename RET>
     static RET MakeCallWithArguments(JVMLoader loader,
                                      jobject java_object,
                                      jmethodID methodID,
                                      std::unique_ptr<jvalue[]> args) {
         
+    
         auto env = loader.GetJNIEnviorment();
         
         try {
@@ -105,8 +81,11 @@ public:
             env->ExceptionDescribe();
             throw error;
         }
+        
     };
 
+    
+   
     template <typename T>
     static std::string GetName( JVMLoader loader, T& reflectObject ) {
    
@@ -158,11 +137,11 @@ public:
                                                                            CLASS_ARRAY,
                                                                            reflectObject );
             
-            
             using M = std::string (*)(JVMLoader loader, jobject& reflectObject);
+            
             auto Fn = [](JVMLoader loader, jobject& object ) {
-             
-                jstring tmp = GetterUsingString<jstring>(loader,
+                
+                jstring tmp = GetterUsingString<jstring>(loader      ,
                                                          JAVA_CLASS,
                                                          "getName",
                                                          STRING_RETURN_TYPE,
@@ -171,12 +150,9 @@ public:
                 return Util::GetStringFromJVM(loader.GetJNIEnviorment(), tmp);
             };
             
-          
-            
             auto tmp = Util::IterateJObjectArray<M, std::string>(loader, objectArrayType , Fn );
            
             return tmp;
-            
             
         }catch(VMError &error){
             throw error;

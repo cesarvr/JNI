@@ -43,13 +43,31 @@ public:
         }
     };
     
-    template <typename JEnv>
-    static std::string GetStringFromJVM(JEnv env, jstring AStr) {
+
+    static std::string GetStringFromJVM(const std::shared_ptr<JNIEnv> env, jstring AStr) {
         
         const char *str = env->GetStringUTFChars(AStr,NULL);
         env->ReleaseStringUTFChars( AStr,str );
         std::string tmp = str;
         return tmp;
+    }
+    
+    
+    
+    static std::vector <unsigned char> GetArrayFromJVM(std::shared_ptr<JNIEnv> env, jarray arrayObject ) {
+    
+        Check(arrayObject, "GetArrayFromJVM: NullPointer in arrayObject");
+        
+        std::vector <unsigned char> data;
+        jint count = env->GetArrayLength( (jbyteArray) arrayObject );
+        
+        data.resize(count);
+        
+        std::unique_ptr<unsigned char[]> buffer (new unsigned char[count]);
+        
+        env->GetByteArrayRegion ( (jbyteArray) arrayObject , 0, count, (jbyte*)&data[0] );
+        
+        return data;
     }
     
     
