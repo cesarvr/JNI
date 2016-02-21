@@ -9,6 +9,10 @@
 #ifndef jvm_global_h
 #define jvm_global_h
 
+#ifdef _WIN32
+	#include <memory>
+#endif
+
 
 #include <iostream>
 #ifdef __APPLE__
@@ -16,6 +20,10 @@
 #else
     #include <jni.h>
 #endif
+
+
+
+
 
 #include <sstream>
 #include <vector>

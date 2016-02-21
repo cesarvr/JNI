@@ -14,10 +14,6 @@
 #include "jvm_handler.h"
 #include "jvm_util.hpp"
 
-
-
-
-
 class Field {
     
 public:
