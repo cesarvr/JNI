@@ -6,6 +6,7 @@
 
 int main()
 {
+	JavaClass jc;
     return 0;
 }
 
