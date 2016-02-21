@@ -9,19 +9,22 @@
 #ifndef jvm_global_h
 #define jvm_global_h
 
+#include <iostream>
+
 #ifdef _WIN32
 	#include <memory>
 #endif
 
-
-#include <iostream>
 #ifdef __APPLE__
     #include <JavaVM/jni.h>
+	using CreateJVM = jint(*) (JavaVM **pvm, void **penv, void *args);
 #else
     #include <jni.h>
 #endif
 
-
+#ifdef  __linux__
+	using CreateJVM = jint(*) (JavaVM **pvm, void **penv, void *args);
+#endif
 
 
 

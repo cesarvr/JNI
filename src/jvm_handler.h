@@ -4,17 +4,20 @@
 
 #include "jvm_global.hpp"
 
-using CreateJVM = jint (*) (JavaVM **pvm, void **penv, void *args);
+#ifdef _WIN32
+using CreateJVM = jint(__stdcall*) (JavaVM **pvm, void **penv, void *args);
+#elif
+using CreateJVM = jint(__stdcall*) (JavaVM **pvm, void **penv, void *args);
+#endif
 
 class JVMLoader {
 protected:
     JavaVM *vm = nullptr;
     std::shared_ptr<JNIEnv> env= nullptr;
     std::string classPath;
-    
-    
     bool isJvmStarted = false;
     CreateJVM create_vm;
+
 public:
     JVMLoader();
     const std::shared_ptr<JNIEnv>& GetJNIEnviorment() { return env; };
