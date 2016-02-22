@@ -6,8 +6,8 @@
 
 #ifdef _WIN32
 using CreateJVM = jint(__stdcall*) (JavaVM **pvm, void **penv, void *args);
-#elif
-using CreateJVM = jint(__stdcall*) (JavaVM **pvm, void **penv, void *args);
+#else
+using CreateJVM = jint(*) (JavaVM **pvm, void **penv, void *args);
 #endif
 
 class JVMLoader {
