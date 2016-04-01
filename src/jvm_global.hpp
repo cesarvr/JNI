@@ -9,7 +9,6 @@
 #ifndef jvm_global_h
 #define jvm_global_h
 
-#include <iostream>
 
 #ifdef _WIN32
 	#include <memory>
@@ -17,43 +16,37 @@
 
 #ifdef __APPLE__
     #include <JavaVM/jni.h>
-	using CreateJVM = jint(*) (JavaVM **pvm, void **penv, void *args);
 #else
     #include <jni.h>
 #endif
 
-#ifdef  __linux__
-	using CreateJVM = jint(*) (JavaVM **pvm, void **penv, void *args);
+#ifdef __linux__
+
+
+  #include <memory>
+  #include <dlfcn.h>
+  #include <string>
 #endif
 
-
-
+#include <iostream>
 #include <sstream>
 #include <vector>
 
-const std::string METHOD_CLASS("java/lang/reflect/Method");
-const std::string JAVA_CLASS("java/lang/Class");
-const std::string JAVA_STRING_CLASS("java.lang.String");
 
-
-const std::string STRING_RETURN_TYPE("()Ljava/lang/String;");
-const std::string CLASS_MOD_RETURN_TYPE("()Ljava/lang/Class;");
-const std::string CLASS_ARRAY("()[Ljava/lang/Class;");
+const std::string JAVA_METHOD_CLASS("java/lang/reflect/Method");
+const std::string JAVA_STRING_CLASS("java/lang/String");
 
 const std::string CLASS_DEFAULT_CTS("<init>");
 const std::string VOID_RETURN("()V");
 
 struct VMError {
     std::string errorMessage;
-    int errorCode;
 };
 
-struct JavaObject{
-    jclass member = nullptr;
-    jmethodID constructor = nullptr;
-    jobject object = nullptr;
-    jobjectArray methods = nullptr;
-};
+
+using JEnv  = const std::shared_ptr<JNIEnv>;
+
+
 
 
 

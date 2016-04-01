@@ -3,26 +3,54 @@
 JVMLoader::JVMLoader() {
     
     SetClassPath("-Djava.class.path=*:."); //use current directory as classpath.
-};
+}
 
 void JVMLoader::SetClassPath(std::string _classPath) {
     
     classPath = _classPath;
-};
+}
 
 bool JVMLoader::isVMReady() {
     
-    return isJvmStarted;
+    return jvmStatus;
 }
 
 std::string JVMLoader::VMStatus(int status) {
     if(status != JNI_ERR) {
-        isJvmStarted = true;
+        jvmStatus = true;
         return "[jvm]: started successfully.";
     } else {
-        isJvmStarted = false;
+        jvmStatus = false;
         return "[jvm]: error starting virtual machine.";
     }
+}
+
+void JVMLoader::ReleaseThread(){
+    vm->DetachCurrentThread();
+};
+
+std::string JVMLoader::GetClassPath() {
+    return classPath;
+};
+
+
+const std::shared_ptr<JNIEnv>& JVMLoader::GetJNIEnviorment() {
+    
+    if(env == nullptr || env == 0x0) throw VMError{"JVM: has not been initialize. "};
+    
+    int status = vm->GetEnv((void**)&env, JNI_VERSION_1_6);
+    
+    if (status == JNI_EDETACHED) {
+        if (vm->AttachCurrentThread((void **) &env, NULL) != 0) {
+            std::cout << "GetJNIEnviorment-> Failed to attach" << std::endl;
+        }
+        
+    } else if (status == JNI_OK)
+        return env;
+    else if (status == JNI_EVERSION)
+        throw VMError{"GetEnv: version not supported"};
+    
+    return env;
 };
 
 
@@ -31,24 +59,20 @@ std::string JVMLoader::Start() {
 
 #ifdef __linux__
     
-    void* handle = dlopen("./libjvm.so", RTLD_LAZY);
+    void* handle = dlopen("./linux/libjvm.so", RTLD_LAZY);
     
-    if (!handle) {
-        info.GetReturnValue().Set( Nan::New(" [jvm]: fatal! can't load shared library. libjvm.so").ToLocalChecked() );
-        return;
-    }
+    if (!handle) throw VMError{ "Fatal: Can't load dynamic library libjvm.so" }; 
     
     create_vm = (CreateJVM) dlsym(handle, "JNI_CreateJavaVM");
     
     const char *dlsym_error = dlerror();
+    
     if (dlsym_error) {
-        
         std::string msg = "Cannot find symbol: JNI_CreateJavaVM || msg: ";
         msg = msg + dlsym_error;
-        info.GetReturnValue().Set( Nan::New(msg).ToLocalChecked() );
         
         dlclose(handle);
-        return;
+        throw VMError{"Fatal: "+ msg };
     }
     
 #else
@@ -65,8 +89,8 @@ std::string JVMLoader::Start() {
     options[0].optionString = (char *)classPath.c_str();
     vm_args.options = options;
     
-    int status = create_vm(&vm, (void**)&env, &vm_args);
+    int status = create_vm((JavaVM**)&vm, (void**)&env, &vm_args);
     
     return VMStatus(status);
-};
+}
 
