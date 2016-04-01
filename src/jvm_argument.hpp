@@ -27,19 +27,14 @@ private:
 
     
 public:
+
+    /* Accessor */
+    bool IsVoid() { return listOfArguments.size() == 0; };
+
     JavaArguments(std::vector<std::string> arguments);
     JavaArguments(){};
-    
-    bool IsVoid() { return listOfArguments.size() == 0; };
-    
     std::unique_ptr<jvalue[]> GetArguments( JEnv env, std::vector<JavaValue>& values );
-    
-    void CheckInfo();
-    //jvalue *GetArguments();
 };
-
-
-
 
 
 #endif /* jvm_argument_hpp */

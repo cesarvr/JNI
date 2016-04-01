@@ -17,13 +17,18 @@
 using ObjectInterface = jobject(*)(JNIEnv *env, jobject obj, jmethodID methodID, const jvalue * args);
 using IntegerInterface = jint(*)(JNIEnv *env, jobject obj, jmethodID methodID, const jvalue * args);
 
+
+const std::string JAVA_METHOD_CLASS("java/lang/reflect/Method");
+const std::string JAVA_STRING_CLASS("java/lang/String");
+const std::string CLASS_DEFAULT_CTS("<init>");
+const std::string VOID_RETURN("()V");
+
 struct JavaMethod {
     std::string name;
     std::string returnType;
     JavaArguments arguments;
     jmethodID methodPTR;
 };
-
 
 
 class Reflect: HandleEnv {
@@ -41,8 +46,6 @@ private:
     
     jobject clazz;
     Functor<ObjectInterface> objectMethod;
-    
-    
     
 public:
     
@@ -69,7 +72,6 @@ public:
 class Object: HandleEnv {
 private:
     jobject object;
-    //jclass member;
     std::string name;
     std::vector<JavaMethod> methods;
     
@@ -88,11 +90,5 @@ public:
     
     void ReleaseThread(){ Release(); }
 };
-
-
-
-
-
-
 
 #endif /* jvm_reflect_hpp */

@@ -22,7 +22,6 @@ reflect(loader),
 objectMethod(loader, loader.GetJNIEnviorment()->functions->CallObjectMethodA),
 intMethod(loader, loader.GetJNIEnviorment()->functions->CallIntMethodA)
 {
-    
     auto env = GetEnv();
     name = className;
     
@@ -100,11 +99,13 @@ JavaValue Object::Call(std::string methodName, std::vector<JavaValue> args){
 
 const std::vector<JavaMethod>& Object::GetMembers(){
     return methods;
-}
+};
 
 std::string Object::GetClassName(){
     return name;
 };
+
+
 
 
 

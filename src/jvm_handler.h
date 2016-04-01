@@ -22,7 +22,6 @@ public:
     JVMLoader();
     
     const std::shared_ptr<JNIEnv>& GetJNIEnviorment();
-    
     void ReleaseThread();
     bool isVMReady();
     void SetClassPath(std::string _classPath);
@@ -50,12 +49,8 @@ public:
     };
 
     void Release() {
-        std::cout << "Dettaching JVM from Current Thread   0x00008888" << std::endl;
         java.ReleaseThread();
     };
-
 };
-
-
 
 #endif /* JVM_Loader */

@@ -13,18 +13,8 @@ JavaArguments::JavaArguments( std::vector<std::string> arguments ) {
     listOfArguments = arguments;
 };
 
-void JavaArguments::CheckInfo(){
-    
-
-    for(std::string arg : listOfArguments) {
-       // std::cout << "->" << arg << std::endl;
-    }
-}
-
 
 std::unique_ptr<jvalue[]> JavaArguments::GetArguments(JEnv env, std::vector<JavaValue>& values) {
-    
-  //  std::cout << "taking arguments" << std::endl;
     
     if (values.size() < listOfArguments.size()) {
         std::stringstream msg;
@@ -44,22 +34,17 @@ std::unique_ptr<jvalue[]> JavaArguments::GetArguments(JEnv env, std::vector<Java
     std::unique_ptr<jvalue[]> jniArguments( new jvalue[ listOfArguments.size() ] );
     
     for(const std::string& arg : listOfArguments) {
-        if (arg == JSTRING) {
+        if (arg == JSTRING)
             jniArguments[ argsIndex ].l = env->NewStringUTF( values[ argsIndex ].getStringValue().c_str() );
-            argsIndex++;
-        }
         
-        if (arg == JINT) {
+        if (arg == JINT)
             jniArguments[ argsIndex ].i = values[argsIndex].getIntValue();
-            argsIndex++;
-        }
         
-        if (arg == JBYTE) {
+        if (arg == JBYTE)
             jniArguments[ argsIndex ].b = values[argsIndex].getIntValue();
-        }
+        
+        argsIndex++;
     }
-    
-    // std::cout << "taking arguments [end]" << std::endl;
     
     return jniArguments;
 };

@@ -28,7 +28,7 @@ public:
     JavaValue(int value);
     JavaValue(std::vector<char> data);
     
-    
+    /* Accessors */
     bool IsString(){  return type==JVMType::String; };
     bool IsInteger(){ return type==JVMType::Integer; };
     bool IsFloat(){   return type==JVMType::Float; };
@@ -42,13 +42,6 @@ public:
     std::vector<char> getArrayValue();
     
     std::string getStringValue();
-    
 };
-
-
-
-
-
-
 
 #endif /* jvm_type_hpp */

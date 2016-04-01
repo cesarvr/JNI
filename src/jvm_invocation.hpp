@@ -2,19 +2,19 @@
 //  jvm_type.h
 //  LibJNI
 //
-//  Created by Cesar Valdez on 25/02/2016.
-//  Copyright © 2016 Cesar Valdez. All rights reserved.
-//
 
 #ifndef jvm_type_h
 #define jvm_type_h
 
-#include "jvm_global.hpp"
 #include "utils.h"
+#include "jvm_global.hpp"
 
-
-
-
+/*
+    JNIType
+    
+    - specialized templates to tell what to do with specific types.
+    - if you want to support a new type just add a new class.
+*/
 
 template<typename T>
 struct JNIType: HandleEnv {
@@ -60,7 +60,7 @@ struct JNIType<jstring>:HandleEnv {
     std::string GetValue(){
         auto env = GetEnv();
         if(value == nullptr) return "Undefined";
-
+        
         const char *str =env->GetStringUTFChars( (jstring)value , NULL );
         std::string tmp{str};
         env->ReleaseStringUTFChars( (jstring)value ,str );
@@ -73,20 +73,20 @@ struct JNIType<jstring>:HandleEnv {
 
 
 
-
-
 /*
  Make JNI call and capture possible exceptions.
- */
+*/
 
 
-template <typename F, typename ...Args>
-auto Wrapper(F && f, JEnv env,  Args &&... args) ->decltype(f(env.get(), args...)) {
+template <typename Function, typename ...Args>
+auto Wrapper(Function&& func, JEnv env,  Args &&... args)
+-> decltype(func(env.get(), args...))
+{
     try {
-        Utils::isNull(f);
+        Utils::isNull(func);
         Utils::isNull(env);
         
-        auto x = f(env.get(), args...);
+        auto x = func(env.get(), args...);
         
         if (env->ExceptionCheck()){
             throw VMError{"error in JVM: \n"};
@@ -101,23 +101,25 @@ auto Wrapper(F && f, JEnv env,  Args &&... args) ->decltype(f(env.get(), args...
 }
 
 /*
- Class to wrap JNI Call###Method.
+ Class template to wrap JNI function pointers.
+ 
+ - FunctionPtr: takes a function pointer and save it for later use in Call.
  */
 
-template <typename Fx>
+template <typename FunctionPtr>
 class Functor : HandleEnv {
     
 private:
     JEnv env;
-    Fx func;
+    FunctionPtr func;
     
 public:
     
-    Functor( JVMLoader _env , Fx _func ): HandleEnv(_env), func(_func) { };
+    Functor( JVMLoader _env , FunctionPtr _func ): HandleEnv(_env), func(_func) { };
     
     template <typename ReturnType, typename... Args>
-    JNIType<ReturnType>
-    Call(Args... args) {
+    JNIType<ReturnType> Call(Args... args) {
+        
         auto env = GetEnv();
         JNIType<ReturnType> ret(GetLoader());
         
