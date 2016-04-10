@@ -46,6 +46,24 @@ intMethod(loader, loader.GetJNIEnviorment()->functions->CallIntMethodA)
 };
 
 
+JavaMethod Object::FindMethod( std::string methodName ) {
+    for(auto& method: methods ){
+        if (method.GetName() == methodName) {
+            return method;
+        }
+    }
+    
+    throw VMError({ "Method not found: " + methodName });
+}
+
+void Object::Call(std::string methodName, Arguments &args) {
+    
+    auto method = FindMethod(methodName);
+    
+    auto javaValue = args.Get( GetEnv(), method.ArgumentsType() );
+}
+
+
 /*
 JavaValue Object::Call(std::string methodName, std::vector<JavaValue> args){
     

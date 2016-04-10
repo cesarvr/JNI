@@ -88,6 +88,7 @@ private:
 public:
     Object(JVMLoader env, std::string className);
     
+    JavaMethod FindMethod( std::string methodName );
     void Call(std::string methodName, Arguments& args);
     
     //JavaValue Call(std::string methodName, std::vector<JavaValue> args);
