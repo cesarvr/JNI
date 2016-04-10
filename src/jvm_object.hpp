@@ -10,7 +10,8 @@
 #define jvm_reflect_hpp
 
 #include "utils.h"
-#include "jvm_argument.hpp"
+//#include "jvm_argument.hpp"
+#include "values.hpp"
 #include "jvm_invocation.hpp"
 #include "jvm_handler.h"
 
@@ -23,12 +24,17 @@ const std::string JAVA_STRING_CLASS("java/lang/String");
 const std::string CLASS_DEFAULT_CTS("<init>");
 const std::string VOID_RETURN("()V");
 
+/*
 struct JavaMethod {
     std::string name;
     std::string returnType;
-    JavaArguments arguments;
+    Arguments arguments;
     jmethodID methodPTR;
-};
+}; */
+
+
+
+
 
 
 class Reflect: HandleEnv {
@@ -82,7 +88,9 @@ private:
 public:
     Object(JVMLoader env, std::string className);
     
-    JavaValue Call(std::string methodName, std::vector<JavaValue> args);
+    void Call(std::string methodName, Arguments& args);
+    
+    //JavaValue Call(std::string methodName, std::vector<JavaValue> args);
     
     const std::vector<JavaMethod>& GetMembers();
     

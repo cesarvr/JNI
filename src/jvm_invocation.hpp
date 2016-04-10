@@ -35,7 +35,7 @@ template<>
 struct JNIType<jint>:HandleEnv {
     jint value;
     
-    JNIType(JVMLoader env):HandleEnv(env){};
+    //JNIType(JVMLoader env):HandleEnv(env){};
     
     void SetValue(jint val){
         value = (int)val;

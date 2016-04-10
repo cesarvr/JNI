@@ -11,6 +11,11 @@
 
 JavaArguments::JavaArguments( std::vector<std::string> arguments ) {
     listOfArguments = arguments;
+    
+    for (auto &val: arguments) {
+        std::cout << "args ->" << std::endl;
+    }
+    
 };
 
 

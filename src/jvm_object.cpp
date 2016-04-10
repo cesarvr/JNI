@@ -46,6 +46,7 @@ intMethod(loader, loader.GetJNIEnviorment()->functions->CallIntMethodA)
 };
 
 
+/*
 JavaValue Object::Call(std::string methodName, std::vector<JavaValue> args){
     
     bool methodNotFound = true;
@@ -96,7 +97,9 @@ JavaValue Object::Call(std::string methodName, std::vector<JavaValue> args){
     
     return value;
 };
-
+*/
+ 
+ 
 const std::vector<JavaMethod>& Object::GetMembers(){
     return methods;
 };
@@ -134,17 +137,18 @@ Reflect::GetMethodsDefinition() {
     
     auto methodsList = objectMethod.Call<jobject>(clazz, jmethodArray, nullptr);
     
-    auto env = GetEnv();
-    
     auto Fn = [this](JEnv env, jobject& object ) {
-        JavaMethod methd;
+        JavaMethod javaMethod(GetLoader());
         
-        methd.name = GetName(METHOD_CLASS, object);
-        methd.returnType = GetReturnType(object);
-        methd.arguments = JavaArguments( GetParameters(object) );
-        methd.methodPTR = Wrapper(env->functions->FromReflectedMethod, env, object );
+        javaMethod.SetName( GetName(METHOD_CLASS, object) );
        
-        return methd;
+        javaMethod.SetReturnTypeInfo( GetReturnType(object) );
+        javaMethod.ArgumentsType().Set( GetParameters(object));
+        
+        auto methodId = Wrapper(GetEnv()->functions->FromReflectedMethod, GetEnv(), object );
+        javaMethod.SetMethodByReference(methodId);
+    
+        return javaMethod;
     };
     
     return Utils::IterateJObjectArray< decltype(Fn), JavaMethod >( GetEnv(), (jobjectArray) methodsList.GetValue(), Fn );

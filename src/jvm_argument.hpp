@@ -20,6 +20,18 @@ const std::string JINT = "int";
 const std::string JBYTE_ARRAY = "[B";
 
 
+class Arguments {
+    std::string typeName;
+    
+    Arguments(std::string _typeName): typeName(_typeName) {};
+    
+    void Argument( std::string _type, JavaValue value ) {
+    
+    };
+};
+
+
+
 class JavaArguments{
     
 private:

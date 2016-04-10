@@ -11,6 +11,7 @@
 		5B06BCC51CAEDC8B00BD0E4B /* jvm_argument.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5B06BCBA1CAEDC8B00BD0E4B /* jvm_argument.cpp */; };
 		5B06BCC61CAEDC8B00BD0E4B /* jvm_handler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5B06BCBD1CAEDC8B00BD0E4B /* jvm_handler.cpp */; };
 		5B06BCC71CAEDC8B00BD0E4B /* jvm_object.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5B06BCC11CAEDC8B00BD0E4B /* jvm_object.cpp */; };
+		5B06BCE31CB5751800BD0E4B /* values.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5B06BCE11CB5751800BD0E4B /* values.cpp */; };
 		5B2F24811CA1DB4800FC21DA /* JavaVM.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5BB242201C5FA8F200D65FFC /* JavaVM.framework */; };
 		5B4285111C64C2EC0019C922 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5B42850F1C64C2EC0019C922 /* main.cpp */; };
 /* End PBXBuildFile section */
@@ -39,6 +40,8 @@
 		5B06BCC11CAEDC8B00BD0E4B /* jvm_object.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = jvm_object.cpp; path = ../../src/jvm_object.cpp; sourceTree = "<group>"; };
 		5B06BCC21CAEDC8B00BD0E4B /* jvm_object.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = jvm_object.hpp; path = ../../src/jvm_object.hpp; sourceTree = "<group>"; };
 		5B06BCC31CAEDC8B00BD0E4B /* utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = utils.h; path = ../../src/utils.h; sourceTree = "<group>"; };
+		5B06BCE11CB5751800BD0E4B /* values.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = values.cpp; path = ../../src/values.cpp; sourceTree = "<group>"; };
+		5B06BCE21CB5751800BD0E4B /* values.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = values.hpp; path = ../../src/values.hpp; sourceTree = "<group>"; };
 		5B42850F1C64C2EC0019C922 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = ../main.cpp; sourceTree = "<group>"; };
 		5BB2420A1C5F772600D65FFC /* LibJNI */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = LibJNI; sourceTree = BUILT_PRODUCTS_DIR; };
 		5BB242201C5FA8F200D65FFC /* JavaVM.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaVM.framework; path = System/Library/Frameworks/JavaVM.framework; sourceTree = SDKROOT; };
@@ -77,6 +80,8 @@
 		5BB242011C5F772600D65FFC = {
 			isa = PBXGroup;
 			children = (
+				5B06BCE11CB5751800BD0E4B /* values.cpp */,
+				5B06BCE21CB5751800BD0E4B /* values.hpp */,
 				5B06BCB71CAEDC7B00BD0E4B /* lib */,
 				5BB242201C5FA8F200D65FFC /* JavaVM.framework */,
 				5BB2420C1C5F772600D65FFC /* LibJNI */,
@@ -161,6 +166,7 @@
 				5B4285111C64C2EC0019C922 /* main.cpp in Sources */,
 				5B06BCC61CAEDC8B00BD0E4B /* jvm_handler.cpp in Sources */,
 				5B06BCC41CAEDC8B00BD0E4B /* java_value.cpp in Sources */,
+				5B06BCE31CB5751800BD0E4B /* values.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
