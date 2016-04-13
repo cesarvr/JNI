@@ -11,11 +11,11 @@
 
 #include "jvm_global.hpp"
 #include "jvm_handler.h"
+#include "utils.h"
 
 class JavaMethod;
-class Arguments;
 class ArgumentTypeInfo;
-
+class Arguments;
 
 
 /*
@@ -30,8 +30,11 @@ namespace LibJNI {
     
     class BaseJavaValue {
     public:
+        // Override with the value expected by JNI for java Argument.
         virtual std::string GetType() { throw VMError{"Type not implemented yet."}; return ""; };
-        virtual std::unique_ptr<jvalue>& GetJavaValue(JEnv& env) = 0;
+        
+        //Override with the handling behavior for Native to JNI type.
+        virtual jvalue GetJavaValue(JEnv& env) { throw VMError{"GetJavaValue not implemented yet for this type."}; };
     };
     
     template <typename T>
@@ -39,9 +42,8 @@ namespace LibJNI {
     
     
     template<>
-    class Value<std::string>: BaseJavaValue {
+    class Value<std::string>: public BaseJavaValue {
         std::string value;
-        std::unique_ptr<jvalue> javaValue;
         
     public:
         Value(std::string _value):
@@ -49,8 +51,11 @@ namespace LibJNI {
         
         std::string GetType() { return "java.lang.String"; };
         
-        std::unique_ptr<jvalue>& GetJavaValue(JEnv& env)  {
-            javaValue->l =  env->NewStringUTF( value.c_str() );
+        jvalue GetJavaValue(JEnv& env)  {
+            jvalue javaValue;
+            
+           
+            javaValue.l =  env->NewStringUTF( value.c_str() );
             return javaValue;
         };
     };
@@ -61,14 +66,16 @@ namespace LibJNI {
         
     private:
         int value;
-        std::unique_ptr<jvalue> javaValue;
         
     public:
+        Value(int _value):
+        value(_value){};
         
         std::string GetType() { return "int"; };
         
-        std::unique_ptr<jvalue>& GetJavaValue(JEnv& loader)  {
-            javaValue->i =  value;
+        jvalue GetJavaValue(JEnv& loader)  {
+            jvalue javaValue;
+            javaValue.i =  value;
             return javaValue;
         };
     };
@@ -78,12 +85,17 @@ namespace LibJNI {
     class Value<float>: public BaseJavaValue {
         
     private:
-        int value;
-        std::unique_ptr<jvalue> javaValue;
+        float value;
         
     public:
-        std::unique_ptr<jvalue>& GetJavaValue(JEnv& loader)  {
-            javaValue->i =  value;
+        Value(float _value):
+        value(_value){};
+        
+        std::string GetType() { return "float"; };
+        
+        jvalue GetJavaValue(JEnv& loader)  {
+            jvalue javaValue;
+            javaValue.i =  value;
             return javaValue;
         };
     };
@@ -91,18 +103,8 @@ namespace LibJNI {
 
 
 
-class Arguments {
-    
-private:
-    std::vector<LibJNI::BaseJavaValue *> arguments;
-    
-public:
-    Arguments() {};
-    
-    void Set( std::vector<LibJNI::BaseJavaValue *> args );
-    
-    std::vector< std::unique_ptr<jvalue> > Get(  JEnv env, ArgumentTypeInfo& argsTypeInfo );
-};
+
+
 
 
 class ArgumentTypeInfo {
@@ -114,6 +116,21 @@ public:
 private:
     std::vector<std::string> listTypes;
     unsigned long parametersNumber = 0;
+};
+
+
+
+class Arguments {
+    
+private:
+    std::vector<LibJNI::BaseJavaValue *> arguments;
+    
+public:
+    
+    static std::vector<jvalue>
+    Create( JEnv jenv ,
+            ArgumentTypeInfo argumentsInfo ,
+            std::vector<LibJNI::BaseJavaValue *> arguments );
 };
 
 
@@ -133,6 +150,8 @@ public:
     std::string GetReturnTypeInfo(){ return returnTypeInfo; };
     
     void SetMethodByReference(jmethodID& methodId){ javaMethodRef = methodId; };
+    jmethodID GetMethodRef() { return javaMethodRef; };
+    
     ArgumentTypeInfo& ArgumentsType(){ return argsType; };
     
     JavaMethod(JVMLoader loader): HandleEnv(loader) {};

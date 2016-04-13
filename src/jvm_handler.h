@@ -3,6 +3,7 @@
 
 
 #include "jvm_global.hpp"
+#include "utils.h"
 
 #ifdef _WIN32
 using CreateJVM = jint(__stdcall*) (JavaVM **pvm, void **penv, void *args);
@@ -41,6 +42,7 @@ public:
     HandleEnv(JVMLoader _java): java(_java){  };
     
     const JEnv& GetEnv(){
+        Utils::isNull(java.GetJNIEnviorment());
         return java.GetJNIEnviorment();
     };
     

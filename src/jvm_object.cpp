@@ -56,13 +56,6 @@ JavaMethod Object::FindMethod( std::string methodName ) {
     throw VMError({ "Method not found: " + methodName });
 }
 
-void Object::Call(std::string methodName, Arguments &args) {
-    
-    auto method = FindMethod(methodName);
-    
-    auto javaValue = args.Get( GetEnv(), method.ArgumentsType() );
-}
-
 
 /*
 JavaValue Object::Call(std::string methodName, std::vector<JavaValue> args){

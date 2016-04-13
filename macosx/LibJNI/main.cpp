@@ -276,16 +276,59 @@ std::shared_ptr<Object> test_create_pdf_obj(JVMLoader& vm){
     return nullptr;
 }
 
-void test_string_param(std::shared_ptr<Object> jobject, std::string x, std::string y ){
+
+void test_concat(std::shared_ptr<Object> jobject, std::string x, std::string y ){
     try{
-        LibJNI::Value<std::string> param1("Hello");
-        LibJNI::Value<std::string> param2("World");
-        //JavaValue p1(x);
-        //JavaValue p2(y);
+        LibJNI::Value<std::string> param1(x);
+        LibJNI::Value<std::string> param2(y);
         
-        //std::cout << "class name: " <<  jobject->GetClassName();
-        //td::cout << "|| concat[string] " <<  jobject->Call("concat", {p1, p2}).getStringValue() << std::endl;
+        std::vector<LibJNI::BaseJavaValue*> args{&param1, &param2};
         
+        std::cout << "Param1 Type: " << param1.GetType() << std::endl;
+        std::cout << "Param2 Type: " << param2.GetType() << std::endl;
+        
+        
+        
+        for( auto param : args ){
+            std::cout << "Params Type: " << param->GetType() << std::endl;
+        }
+        
+        auto ret =  jobject->Call("concat", args);
+        
+        std::cout << "class name: " <<  jobject->GetClassName();
+        std::cout << "|| concat[string] " << ret.GetValue() << std::endl;
+        
+    }catch(VMError& e){
+        std::cout << e.errorMessage << std::endl;
+    }
+}
+
+
+
+/* Testing supported values  */
+void testing_values(std::shared_ptr<Object> jobject, std::string x, std::string y ){
+    try{
+      
+        
+        LibJNI::Value<std::string> param1(x);
+        LibJNI::Value<std::string> param2(y);
+        
+        LibJNI::Value<int> param3(3);
+        LibJNI::Value<int> param4(5);
+        
+        
+        LibJNI::Value<float> param6(3.0f);
+        LibJNI::Value<float> param7(5.0f);
+        
+        std::vector<LibJNI::BaseJavaValue*> args{&param1, &param2, &param3, &param4, &param6, &param7};
+        
+
+        for(auto arg: args){
+            std::cout << "Param Type: " << arg->GetType() << std::endl;
+        }
+        
+    
+    
     }catch(VMError& e){
         std::cout << e.errorMessage << std::endl;
     }
@@ -322,6 +365,8 @@ int main(){
     vm.Start();
     
     std::shared_ptr<Object> _pdf = test_create_pdf_obj(vm);
+    testing_values(_pdf, "Hello", "World");
+    
     //test_ints_param(_pdf, 4, 5);
     
     //std::shared_ptr<Object> _pdf = test_create_pdf_obj(vm);

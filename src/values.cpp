@@ -8,37 +8,47 @@
 
 #include "values.hpp"
 
-void Arguments::Set(std::vector<LibJNI::BaseJavaValue *> args) {
-    arguments = args;
-}
-
-
-std::vector< std::unique_ptr<jvalue> > Arguments::Get( JEnv env, ArgumentTypeInfo& argsTypeInfo ){
-    
-    int argNumber = 0;
-    std::vector<std::unique_ptr<jvalue>> jniValues;
-    jniValues.reserve( argsTypeInfo.GetNumberOfArguments() );
-    
-    if ( arguments.size() < argsTypeInfo.GetNumberOfArguments() ) {
-        std::stringstream errorMessage;
-        errorMessage << " Missing parameters expected " << argsTypeInfo.GetNumberOfArguments() << " provided " <<arguments.size();
-        throw VMError{ errorMessage.str() };
-    }
-    
-    
-    for(auto args: arguments) {
-        auto argumentType = argsTypeInfo[argNumber];
-        if( args->GetType() == argumentType ) {
-            jniValues.push_back( args->GetJavaValue( env ) );
-        }else
-            throw VMError{ "Type error expected " + argumentType + " type found: " + args->GetType() };
-    }
-    
-    return jniValues;
-}
-
 void ArgumentTypeInfo::Set(std::vector<std::string> argsTypeList) {
     listTypes = argsTypeList;
     parametersNumber = listTypes.size();
 }
 
+
+bool CheckSizeEquality(std::vector<LibJNI::BaseJavaValue *> arguments , ArgumentTypeInfo argumentsInfo ) {
+    
+    if ( arguments.size() == argumentsInfo.GetNumberOfArguments() )
+        return true;
+    else {
+        std::stringstream errorMessage;
+        errorMessage << " Missing parameters expected " << argumentsInfo.GetNumberOfArguments() << " provided " <<arguments.size();
+        throw VMError{ errorMessage.str() };
+    }
+};
+
+
+bool CheckTypeEquality(LibJNI::BaseJavaValue *value, std::string typeName ) {
+    
+    if( value->GetType() == typeName ){
+        return true;
+    }else {
+        throw VMError{ "Type error expected " + typeName + " type found: " + value->GetType() };
+    }
+    
+}
+
+std::vector<jvalue>
+Arguments::Create( JEnv jenv ,
+                  ArgumentTypeInfo argumentsInfo ,
+                  std::vector<LibJNI::BaseJavaValue *> arguments ) {
+    
+    int index = 0;
+    std::vector<jvalue> values;
+    CheckSizeEquality(arguments, argumentsInfo);
+    
+    for(auto arg: arguments ) {
+        CheckTypeEquality(arg, argumentsInfo[index++]);
+        values.push_back( arg->GetJavaValue( jenv ) );
+    }
+    
+    return values;
+}

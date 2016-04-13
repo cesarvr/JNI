@@ -72,6 +72,32 @@ struct JNIType<jstring>:HandleEnv {
 
 
 
+template<> // CLANG LLVM
+struct JNIType<std::__1::basic_string<char>>:HandleEnv {
+    
+    jstring value;
+    
+    JNIType(JVMLoader env):HandleEnv(env){};
+    
+    void SetValue(jobject val){
+        value = (jstring)val;
+    }
+    
+    std::string GetValue(){
+        auto env = GetEnv();
+        if(value == nullptr) return "Undefined";
+        
+        const char *str =env->GetStringUTFChars( (jstring)value , NULL );
+        std::string tmp{str};
+        env->ReleaseStringUTFChars( (jstring)value ,str );
+        
+        return tmp;
+    };
+    
+};
+
+
+
 
 /*
  Make JNI call and capture possible exceptions.
@@ -125,6 +151,8 @@ public:
         
         auto value = Wrapper(func, env, args...);
         ret.SetValue(value);
+        
+        
         
         return ret;
     };

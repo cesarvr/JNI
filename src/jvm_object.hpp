@@ -89,9 +89,17 @@ public:
     Object(JVMLoader env, std::string className);
     
     JavaMethod FindMethod( std::string methodName );
-    void Call(std::string methodName, Arguments& args);
     
-    //JavaValue Call(std::string methodName, std::vector<JavaValue> args);
+    JNIType<std::string> Call(std::string methodName, std::vector<LibJNI::BaseJavaValue *>& arguments ) {
+        
+        auto method = FindMethod(methodName);
+        
+        auto javaValues = Arguments::Create(GetEnv(), method.ArgumentsType(), arguments);
+        JNIType<std::string> retValue = objectMethod.Call<std::string>(object, method.GetMethodRef(), (jvalue*)&javaValues[0]);
+     
+        return retValue;
+    }
+
     
     const std::vector<JavaMethod>& GetMembers();
     
