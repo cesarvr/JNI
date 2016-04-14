@@ -18,14 +18,12 @@ std::string ReturnTypeOf(std::string className) {
 
 Object::Object(JVMLoader loader, std::string className):
 HandleEnv(loader),
-reflect(loader),
-objectMethod(loader, loader.GetJNIEnviorment()->functions->CallObjectMethodA),
-intMethod(loader, loader.GetJNIEnviorment()->functions->CallIntMethodA)
-{
-    auto env = GetEnv();
+invoke(loader),
+reflect(loader) {
+    auto &env = GetEnv();
     name = className;
     
-    auto member = Wrapper(env->functions->FindClass, env, className.c_str() );
+    auto member = Wrapper(env->functions->FindClass, GetEnv(), className.c_str() );
     
     
     auto constructor = Wrapper(env->functions->GetMethodID,
@@ -54,62 +52,7 @@ JavaMethod Object::FindMethod( std::string methodName ) {
     }
     
     throw VMError({ "Method not found: " + methodName });
-}
-
-
-/*
-JavaValue Object::Call(std::string methodName, std::vector<JavaValue> args){
-    
-    bool methodNotFound = true;
-    
-    
-    auto env = GetEnv();
-    
-    
-    JavaValue value;
-    
-    for(auto& method: methods ){
-        
-        if( methodName == method.name ){
-            methodNotFound = false;
-            
-            
-            if( method.returnType == JSTRING ){
-                
-                auto obj = objectMethod.Call<jstring>(object,
-                                                      method.methodPTR,
-                                                      method.arguments.GetArguments(env, args).get());
-              
-                value =  JavaValue(obj.GetValue());
-                
-            }else if( method.returnType == JINT ){
-                
-                
-                
-                auto obj = intMethod.Call<jint>(object,
-                                                method.methodPTR,
-                                                method.arguments.GetArguments(env, args).get());
-                
-                
-                value = JavaValue(obj.GetValue());
-                
-            }else if( method.returnType == JBYTE_ARRAY ){
-                
-                auto obj = objectMethod.Call<jobject>(object,
-                                                      method.methodPTR,
-                                                      method.arguments.GetArguments(env, args).get());
-                
-                value = JavaValue(Utils::GetArrayFromJVM<char>(env, (jobjectArray)obj.GetValue()));
-            }
-        }
-    }
-    
-    if (methodNotFound) throw VMError{"Method not found: " + methodName};
-    
-    return value;
-};
-*/
- 
+} 
  
 const std::vector<JavaMethod>& Object::GetMembers(){
     return methods;
@@ -125,7 +68,10 @@ std::string Object::GetClassName(){
 
 Reflect::Reflect(JVMLoader loader):
 HandleEnv(loader),
-objectMethod(loader, loader.GetJNIEnviorment()->functions->CallObjectMethodA) {
+invoke(loader)
+{
+  
+    assert(GetEnv() != nullptr);
     
 };
 
@@ -146,7 +92,7 @@ Reflect::GetMethodsDefinition() {
                                   METHOD_GET_METHODS,
                                   ReturnArrayOf(METHOD_CLASS));
     
-    auto methodsList = objectMethod.Call<jobject>(clazz, jmethodArray, nullptr);
+    auto methodsList = invoke.Call<jobject>(clazz, jmethodArray, nullptr);
     
     auto Fn = [this](JEnv env, jobject& object ) {
         JavaMethod javaMethod(GetLoader());
@@ -162,7 +108,7 @@ Reflect::GetMethodsDefinition() {
         return javaMethod;
     };
     
-    return Utils::IterateJObjectArray< decltype(Fn), JavaMethod >( GetEnv(), (jobjectArray) methodsList.GetValue(), Fn );
+    return Utils::IterateJObjectArray< decltype(Fn), JavaMethod >( GetEnv(), (jobjectArray) methodsList.Get(), Fn );
 }
 
 
@@ -172,7 +118,7 @@ std::string Reflect::GetName(std::string className, jobject object) {
                           METHOD_GET_NAME,
                           ReturnTypeOf(JAVA_STRING_CLASS) );
     
-    return objectMethod.Call<jstring>(object, _tmp, nullptr).GetValue();
+    return invoke.Call<std::string>(object, _tmp, nullptr).Get();
 }
 
 std::string Reflect::ToString(std::string className, jobject object){
@@ -181,7 +127,7 @@ std::string Reflect::ToString(std::string className, jobject object){
                           METHOD_TOSTRING,
                           ReturnTypeOf(JAVA_STRING_CLASS) );
     
-    return objectMethod.Call<jstring>(object, _tmp, nullptr).GetValue();
+    return invoke.Call<std::string>(object, _tmp, nullptr).Get();
 }
 
 std::string Reflect::GetReturnType(jobject object){
@@ -190,9 +136,9 @@ std::string Reflect::GetReturnType(jobject object){
                                       METHOD_RETURN_TYPE,
                                       ReturnTypeOf(JAVA_CLASS) );
     
-    auto tmp = objectMethod.Call<jobject>(object, GetReflectionAPI, nullptr);
+    auto tmp = invoke.Call<jobject>(object, GetReflectionAPI, nullptr);
    
-    return GetName(JAVA_CLASS, tmp.GetValue());
+    return GetName(JAVA_CLASS, tmp.Get());
 }
 
 std::vector<std::string>
@@ -202,21 +148,21 @@ Reflect::GetParameters(jobject object) {
                                         METHOD_GET_PARAMETER,
                                         ReturnArrayOf(JAVA_CLASS) );
     
-    auto array = objectMethod.Call<jobject>(object, GetParametersArray, nullptr);
+    auto array = invoke.Call<jobject>(object, GetParametersArray, nullptr);
     
     
     auto Fn = [this](JEnv env, jobject& object ) {
         return GetName(JAVA_CLASS, object);
     };
     
-    return Utils::IterateJObjectArray< decltype(Fn), std::string >( GetEnv(), (jobjectArray) array.GetValue(), Fn );
+    return Utils::IterateJObjectArray< decltype(Fn), std::string >( GetEnv(), (jobjectArray) array.Get(), Fn );
 }
 
 /* Class < Object > <-- GetClass() */
 void Reflect::SetClass(jobject object) {
     
     auto getClass = GetMethod(JAVA_CLASS, METHOD_GET_CLASS.c_str(), ReturnTypeOf(JAVA_CLASS) );
-    clazz = objectMethod.Call<jobject>(object, getClass, nullptr).GetValue();
+    clazz = invoke.Call<jobject>(object, getClass, nullptr).Get();
 }
 
 jobject Reflect::GetReflectClass() {

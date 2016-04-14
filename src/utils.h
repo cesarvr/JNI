@@ -16,9 +16,11 @@ namespace Utils {
 
     
     template<typename T>
-    void chkNull(T& param){
-        if ( param == nullptr || param == 0x0 || !param )
-             throw VMError{"Error: arguments can't be null." };
+    void chkNull(T&& param){
+        //if ( param == 0x0 || !param )
+         //    throw VMError{"Error: arguments can't be null." };
+        
+        assert(param != nullptr);
     }
     
     template<typename T>
@@ -30,7 +32,7 @@ namespace Utils {
     void isNull(T& first, Args... args) {
         chkNull(first);
         
-        nisNull(args...);
+        isNull(args...);
     }
     
     template <typename T, typename R>

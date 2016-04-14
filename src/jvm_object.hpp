@@ -12,8 +12,9 @@
 #include "utils.h"
 //#include "jvm_argument.hpp"
 #include "values.hpp"
-#include "jvm_invocation.hpp"
+//#include "jvm_invocation.hpp"
 #include "jvm_handler.h"
+#include "jinvoke.hpp"
 
 using ObjectInterface = jobject(*)(JNIEnv *env, jobject obj, jmethodID methodID, const jvalue * args);
 using IntegerInterface = jint(*)(JNIEnv *env, jobject obj, jmethodID methodID, const jvalue * args);
@@ -51,7 +52,8 @@ private:
     const std::string METHOD_GET_PARAMETER = "getParameterTypes";
     
     jobject clazz;
-    Functor<ObjectInterface> objectMethod;
+   // Functor<ObjectInterface> objectMethod;
+    Invoke invoke;
     
 public:
     
@@ -82,22 +84,25 @@ private:
     std::vector<JavaMethod> methods;
     
     Reflect reflect;
-    Functor<ObjectInterface> objectMethod;
-    Functor<IntegerInterface> intMethod;
+   // Functor<ObjectInterface> objectMethod;
+   // Functor<IntegerInterface> intMethod;
+    Invoke invoke;
     
 public:
     Object(JVMLoader env, std::string className);
     
     JavaMethod FindMethod( std::string methodName );
     
-    JNIType<std::string> Call(std::string methodName, std::vector<LibJNI::BaseJavaValue *>& arguments ) {
+    
+    template <typename T>
+    LibJNI::Value<T> Call(std::string methodName, std::vector<LibJNI::BaseJavaValue *>& arguments ) {
         
         auto method = FindMethod(methodName);
         
         auto javaValues = Arguments::Create(GetEnv(), method.ArgumentsType(), arguments);
-        JNIType<std::string> retValue = objectMethod.Call<std::string>(object, method.GetMethodRef(), (jvalue*)&javaValues[0]);
-     
-        return retValue;
+        // objectMethod.Call<T>(object, method.GetMethodRef(), (jvalue*)&javaValues[0]);
+        
+        return invoke.Call<T>(object, method.GetMethodRef(), (jvalue*)&javaValues[0]);
     }
 
     

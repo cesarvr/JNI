@@ -35,10 +35,30 @@ namespace LibJNI {
         
         //Override with the handling behavior for Native to JNI type.
         virtual jvalue GetJavaValue(JEnv& env) { throw VMError{"GetJavaValue not implemented yet for this type."}; };
+        
+        /*
+         void SetJavaValue(JEnv& env,  jobject object) { throw VMError{"SetJavaValue not implemented yet for this type."}; }
+         
+         virtual std::string GetString() { throw VMError{"GetString [string], member not supported."}; }
+         
+         virtual int GetInt() { throw VMError{"GetInt [int], member not supported."}; }
+         */
     };
     
     template <typename T>
-    class Value: public BaseJavaValue {};
+    class Value: public BaseJavaValue {
+    private:
+        T value;
+    public:
+        //Value(T _val): value(_val) {};
+        
+        typedef jobject JType;
+        
+        void Set(JEnv& env, T _val) { value = _val; };
+        T Get() {
+            return value;
+        }
+    };
     
     
     template<>
@@ -48,15 +68,33 @@ namespace LibJNI {
     public:
         Value(std::string _value):
         value(_value){};
+        Value(){};
         
-        std::string GetType() { return "java.lang.String"; };
+        typedef jobject JType;
+        
+        std::string GetType() {
+            return "java.lang.String";
+        };
         
         jvalue GetJavaValue(JEnv& env)  {
             jvalue javaValue;
             
-           
             javaValue.l =  env->NewStringUTF( value.c_str() );
             return javaValue;
+        };
+        
+        std::string Get() { return value; };
+        
+        void Set(std::string _val) { value = _val; };
+        
+        void Set(JEnv& env, jobject object) {
+            jstring tmp = (jstring) object;
+            
+            if(tmp == nullptr) value =  "Undefined";
+            
+            const char *str =env->GetStringUTFChars( (jstring)tmp , NULL );
+            value = str;
+            env->ReleaseStringUTFChars( (jstring)tmp ,str );
         };
     };
     
@@ -70,8 +108,15 @@ namespace LibJNI {
     public:
         Value(int _value):
         value(_value){};
+        Value(){};
+        typedef jint JType;
+        
+        void Set(int _val) { value = _val; };
+        void Set(JEnv& env,  jint object) { value = (int)object; }
         
         std::string GetType() { return "int"; };
+        
+        int Get() { return value; };
         
         jvalue GetJavaValue(JEnv& loader)  {
             jvalue javaValue;
@@ -91,7 +136,12 @@ namespace LibJNI {
         Value(float _value):
         value(_value){};
         
+        void Set(float _val) { value = _val; };
+        void Set(JEnv& env,  jfloat object) { value = (jfloat)object; }
+        
         std::string GetType() { return "float"; };
+        
+        float Get() { return value; };
         
         jvalue GetJavaValue(JEnv& loader)  {
             jvalue javaValue;
@@ -129,8 +179,8 @@ public:
     
     static std::vector<jvalue>
     Create( JEnv jenv ,
-            ArgumentTypeInfo argumentsInfo ,
-            std::vector<LibJNI::BaseJavaValue *> arguments );
+           ArgumentTypeInfo argumentsInfo ,
+           std::vector<LibJNI::BaseJavaValue *> arguments );
 };
 
 

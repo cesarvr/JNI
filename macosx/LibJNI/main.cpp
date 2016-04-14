@@ -12,261 +12,13 @@
 #include <cassert>
 
 #import <pthread/pthread.h>
-/*
- 
- void test_return_int(std::shared_ptr<Object> jobject ){
- try{
- std::cout << "class name: " <<  jobject->GetClassName();
- std::cout << "  || hashCode [int]: " <<  jobject->Call("hashCode", {}).getIntValue() << std::endl;
- 
- }catch(VMError& e){
- std::cout << e.errorMessage << std::endl;
- }
- }
- 
- 
- 
- template <typename Value1, typename Value2>
- int test_ints_param(std::shared_ptr<Object> jobject, Value1 x, Value2 y ){
- 
- try{
- JavaValue p1(x);
- JavaValue p2(y);
- 
- return jobject->Call("add", {p1, p2}).getIntValue();
- }catch(VMError& e){
- std::cout << e.errorMessage << std::endl;
- throw e;
- }
- }
- 
- 
- 
- 
- 
- void test_pdf_byte_return(std::shared_ptr<Object> jobject, std::string html){
- std::cout << "\nrunning itext.jar -> html/pdf [test]" << std::endl;
- 
- try{
- JavaValue p1(html);
- 
- 
- std::cout << "class name: " <<  jobject->GetClassName() << std::endl;
- auto obj = jobject->Call("html2pdf", {p1}).getArrayValue();
- /*
- for(auto b: obj.getArrayValue()){
- std::cout << b << std::endl;
- }
- 
- std::cout << "[success] size of pdf file: " << obj.size() << '\n' << std::endl;
- 
- }catch(VMError& e){
- std::cout << "[fail]" <<e.errorMessage << std::endl;
- }
- }
- 
- 
- std::shared_ptr<Object> test_create_string_obj(JVMLoader& vm){
- try {
- std::shared_ptr<Object> pdfclazz(new Object(vm, "java/lang/String"));
- return pdfclazz;
- }catch(VMError& e){
- std::cout << e.errorMessage << std::endl;
- }
- 
- return nullptr;
- }
- 
- 
- 
- void test_pdf_search_return_string(std::shared_ptr<Object> jobject, std::string url){
- std::cout << "\n testing pdf search" << std::endl;
- 
- try{
- JavaValue p1(url);
- 
- 
- std::cout << "class name: " <<  jobject->GetClassName() << std::endl;
- auto obj = jobject->Call("Strip", {p1}).getStringValue();
- 
- std::cout << "content pdf: " << obj << std::endl;
- 
- 
- }catch(VMError& e){
- std::cout << e.errorMessage << std::endl;
- }
- }
- 
- 
- 
- void test_isnull() {
- try{
- std::cout << "checking null detection" << std::endl;
- int *x = NULL;
- Utils::isNull(x);
- }catch(VMError& error){
- std::cout << error.errorMessage << std::endl;
- 
- /// Smart pointer check
- 
- try {
- std::cout << "\nchecking [small_ptr] null detection" << std::endl;
- std::shared_ptr<int *> xptr;
- Utils::isNull(xptr);
- } catch (VMError& error) {
- std::cout << "done :-] "  << error.errorMessage << std::endl;
- }
- }
- }
- 
- void errExitEN(int err, const char *msg) {
- printf("error: %d  message: %s", err, msg);
- exit(EXIT_FAILURE);
- }
- 
- 
- void testing_exceptions_handling(JVMLoader vm){
- std::shared_ptr<Object> _pdf = test_create_pdf_obj(vm);
- test_isnull();
- 
- try {
- test_ints_param<std::string,int>(_pdf, "hellow",1);
- } catch (VMError& error) {
- std::cout << "\n Exception translated succesfully. [pass]" <<std::endl;
- }
- 
- 
- }
- 
- void testing_sync(JVMLoader vm){
- 
- 
- std::shared_ptr<Object> _str = test_create_string_obj(vm);
- std::shared_ptr<Object> _pdf = test_create_pdf_obj(vm);
- 
- test_return_int(_str);
- test_return_int(_pdf);
- auto r = test_ints_param(_pdf, 4,5);
- 
- assert(r == 4+5);
- 
- 
- //sync: benchmark
- 
- time_t t = 0;
- srand(time(&t));
- for (int x = 0; x<40; x++) {
- int rx = rand() % 10+1;
- int ry = rand() % 10+1;
- 
- auto r = test_ints_param<int,int>(_pdf, rx,ry);
- assert(r == (rx+ry));
- }
- 
- 
- 
- test_string_param(_pdf, "Hello ", "World");
- 
- 
- // std::string h{"Hella"};
- // std::string w{" World"};
- // for (int x = 0; x<400000000; x++) {
- // test_string_param(_pdf, h, w);
- // }
- 
- std::string html{"<html><body> This is my Project </body></html>"};
- test_pdf_byte_return(_pdf, html);
- 
- }
- 
- 
- 
- 
- 
- 
- 
- // Multi-Thread Tests
- 
- 
- static pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
- 
- 
- static void *
- DoTask(void *vm) {
- 
- std::string *ss = nullptr;
- int mtx_status = 0;
- 
- 
- try{
- 
- 
- 
- // printf("DoTask  --> JVM\n");
- JVMLoader ljvm = *reinterpret_cast<JVMLoader*>(vm);
- std::shared_ptr<Object> _pdf = test_create_pdf_obj(ljvm);
- 
- JavaValue h{"Hello "};
- JavaValue w{"World"};
- JavaValue t{1000};
- 
- auto ret = _pdf->Call("concatHeavy", {h,w,t}); // (java) concat + sleep
- 
- 
- if ((mtx_status = pthread_mutex_lock(&mtx)) != 0){
- errExitEN(mtx_status, "pthread_mutex_lock");
- }
- 
- std::cout << "-> " << ret.getStringValue() << std::endl;
- 
- 
- if ((mtx_status = pthread_mutex_unlock(&mtx)) != 0){
- errExitEN(mtx_status, "pthread_mutex_unlock");
- }
- 
- 
- ss = new std::string(ret.getStringValue()); // ret.getStringValue().c_str();
- 
- }catch(VMError& error){
- std::cout << " error: " << error.errorMessage << std::endl;
- }
- 
- 
- return (void *) ss;
- }
- 
- 
- void mthread_test(JVMLoader loader, int workers){
- 
- 
- pthread_t grid[workers];
- 
- 
- printf("spawming threads and doing alloc+sleep \n");
- 
- for (int i=0; i < workers; i++) {
- int thread_err;
- if ((thread_err = pthread_create(&grid[i], NULL, DoTask, (void *)&loader)) != 0 ) {
- errExitEN(thread_err, "pthread_create");
- }
- 
- //pthread_detach(grid[i]);
- }
- 
- printf("main thread free to do more work... \n");
- 
- 
- for (int i=0; i<workers; i++) {
- pthread_join(grid[i],NULL);
- }
- 
- }
- 
- */
 
 
 std::shared_ptr<Object> test_create_pdf_obj(JVMLoader& vm){
     try {
+        
+        Utils::isNull(vm.GetJNIEnviorment());
+        assert(vm.GetJNIEnviorment() != nullptr);
         std::shared_ptr<Object> pdfclazz(new Object(vm, "pdf/P2HService"));
         return pdfclazz;
     }catch(VMError& e){
@@ -276,6 +28,132 @@ std::shared_ptr<Object> test_create_pdf_obj(JVMLoader& vm){
     return nullptr;
 }
 
+void errExitEN(int err, const char *msg) {
+    printf("error: %d  message: %s", err, msg);
+    exit(EXIT_FAILURE);
+}
+
+
+
+// Multi-Thread Tests
+
+
+static pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
+
+
+static void *
+DoTask(void *vm) {
+    
+    std::string *ss = nullptr;
+    int mtx_status = 0;
+    
+    
+    try{
+        
+        
+        
+        // printf("DoTask  --> JVM\n");
+        JVMLoader ljvm = *reinterpret_cast<JVMLoader*>(vm);
+        std::shared_ptr<Object> _pdf = test_create_pdf_obj(ljvm);
+        
+        LibJNI::Value<std::string> h{"Hello "};
+        LibJNI::Value<std::string> w{"World"};
+        LibJNI::Value<int> t{1000};
+        
+        std::vector<LibJNI::BaseJavaValue*> args {&h,&w,&t};
+        
+        
+        auto ret = _pdf->Call<std::string>("concatHeavy", args); // (java) concat + sleep
+        
+        
+        if ((mtx_status = pthread_mutex_lock(&mtx)) != 0){
+            errExitEN(mtx_status, "pthread_mutex_lock");
+        }
+        
+        std::cout << "-> " << ret.Get() << std::endl;
+        
+        
+        if ((mtx_status = pthread_mutex_unlock(&mtx)) != 0){
+            errExitEN(mtx_status, "pthread_mutex_unlock");
+        }
+        
+        
+        ss = new std::string(ret.Get()); // ret.getStringValue().c_str();
+        
+    }catch(VMError& error){
+        std::cout << " error: " << error.errorMessage << std::endl;
+    }
+    
+    
+    return (void *) ss;
+}
+
+
+
+
+
+
+void mthread_test(JVMLoader loader, int workers){
+    
+    
+    pthread_t grid[workers];
+    
+    
+    printf("spawming threads and doing alloc+sleep \n");
+    
+    for (int i=0; i < workers; i++) {
+        int thread_err;
+        if ((thread_err = pthread_create(&grid[i], NULL, DoTask, (void *)&loader)) != 0 ) {
+            errExitEN(thread_err, "pthread_create");
+        }
+        
+        //pthread_detach(grid[i]);
+    }
+    
+    printf("main thread free to do more work... \n");
+    
+    
+    for (int i=0; i<workers; i++) {
+        pthread_join(grid[i],NULL);
+    }
+    
+}
+
+
+
+
+
+
+void test_sleep_thread(std::shared_ptr<Object> jobject, std::string h1, int time) {
+
+     std::cout << "Sleep Thread Java " << std::endl;
+    
+    
+    LibJNI::Value<std::string> p1(h1);
+    LibJNI::Value<std::string> p2(" ->Attach");
+    LibJNI::Value<int> p3(time);
+
+    std::vector<LibJNI::BaseJavaValue*> args{&p1,&p2,&p3};
+    
+    
+    auto ret = jobject->Call<std::string>("concatHeavy", args); // (java) concat + sleep
+    
+    std::cout << "class name: " <<  jobject->GetClassName() << std::endl;
+    std::cout << "concat heavy sleep [string] " << ret.Get() << std::endl;
+
+}
+
+void test_add_int(std::shared_ptr<Object> jobject,  int x, int y) {
+
+    LibJNI::Value<int> xx(x);
+    LibJNI::Value<int> yy(y);
+    
+    std::cout << "class name: " <<  jobject->GetClassName() << std::endl;
+    
+    std::vector<LibJNI::BaseJavaValue*> args{&xx, &yy};
+    std::cout << " add " << jobject->Call<int>("add", args).Get() << std::endl;
+    
+}
 
 void test_concat(std::shared_ptr<Object> jobject, std::string x, std::string y ){
     try{
@@ -283,20 +161,17 @@ void test_concat(std::shared_ptr<Object> jobject, std::string x, std::string y )
         LibJNI::Value<std::string> param2(y);
         
         std::vector<LibJNI::BaseJavaValue*> args{&param1, &param2};
-        
-        std::cout << "Param1 Type: " << param1.GetType() << std::endl;
-        std::cout << "Param2 Type: " << param2.GetType() << std::endl;
-        
-        
+
         
         for( auto param : args ){
             std::cout << "Params Type: " << param->GetType() << std::endl;
+            std::cout << "Value: " << param << std::endl;
         }
         
-        auto ret =  jobject->Call("concat", args);
+        auto ret =  jobject->Call<std::string>("concat", args);
         
-        std::cout << "class name: " <<  jobject->GetClassName();
-        std::cout << "|| concat[string] " << ret.GetValue() << std::endl;
+        std::cout << "class name: " <<  jobject->GetClassName() << std::endl;
+        std::cout << "|| concat[string] " << ret.Get() << std::endl;
         
     }catch(VMError& e){
         std::cout << e.errorMessage << std::endl;
@@ -335,24 +210,6 @@ void testing_values(std::shared_ptr<Object> jobject, std::string x, std::string 
 }
 
 
-/*
- template <typename Value1, typename Value2>
- int test_ints_param(std::shared_ptr<Object> jobject, Value1 x, Value2 y ){
- 
- try{
- JavaValue p1(x);
- JavaValue p2(y);
- 
- 
- 
- return jobject->Call("add", {p1, p2}).getIntValue();
- }catch(VMError& e){
- std::cout << e.errorMessage << std::endl;
- throw e;
- }
- }
- */
-
 int main(){
     
     //mthread_test();
@@ -365,15 +222,22 @@ int main(){
     vm.Start();
     
     std::shared_ptr<Object> _pdf = test_create_pdf_obj(vm);
-    testing_values(_pdf, "Hello", "World");
     
-    //test_ints_param(_pdf, 4, 5);
     
-    //std::shared_ptr<Object> _pdf = test_create_pdf_obj(vm);
-    //test_pdf_search_return_string(_pdf, "/Users/cvaldez/Documents/javascript/pdfs/en.wikipedia.org1459374728.pdf");
     
-    //testing_sync(vm);
-    // testing_exceptions_handling(vm);
-    // mthread_test(vm,5);
+    try {
+        testing_values(_pdf, "Hello", "World");
+        test_concat(_pdf, "Kobe", "Bryant");
+        test_add_int(_pdf, 3,5);
+        test_sleep_thread(_pdf, "Sleep thread", 5000);
+    
+        mthread_test(vm, 300);
+        
+    } catch (VMError& error) {
+        std::cout << error.errorMessage << std::endl;
+    }
+    
+    
+
     exit(EXIT_SUCCESS);
 };

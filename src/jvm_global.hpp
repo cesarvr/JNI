@@ -31,6 +31,7 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <assert.h>
 
 struct VMError {
     std::string errorMessage;
