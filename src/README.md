@@ -4,7 +4,7 @@ Is as C++ library to ecapsulate all complexity of JNI in an object oriented fash
 
 ## Classes
 
-### JVMHandler
+### JVMLoader
  - This App is in charge of the initialization of the VM and Classpath handling.
 
 ### Object 
