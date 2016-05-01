@@ -7,7 +7,7 @@ JVMLoader::JVMLoader() {
 
 void JVMLoader::SetClassPath(std::string _classPath) {
     
-    classPath = _classPath;
+    classPath = "-Djava.class.path=.:" +  _classPath;
 }
 
 bool JVMLoader::isVMReady() {

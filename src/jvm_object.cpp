@@ -44,7 +44,7 @@ reflect(loader) {
 };
 
 
-JavaMethod Object::FindMethod( std::string methodName ) {
+JavaMethod Object::FindFirstMethod( std::string methodName ) {
     for(auto& method: methods ){
         if (method.GetName() == methodName) {
             return method;
@@ -53,7 +53,23 @@ JavaMethod Object::FindMethod( std::string methodName ) {
     
     throw VMError({ "Method not found: " + methodName });
 } 
- 
+
+std::vector<JavaMethod> Object::FindMethod( std::string methodName ) {
+
+    std::vector<JavaMethod> methodsList;
+    for(auto& method: methods ){
+        if (method.GetName() == methodName)
+            methodsList.push_back(method);
+    }
+    
+    if(methodsList.size() == 0)
+        throw VMError({ "Method not found: " + methodName });
+
+    return methodsList;
+}
+
+
+
 const std::vector<JavaMethod>& Object::GetMembers(){
     return methods;
 };
@@ -62,6 +78,32 @@ std::string Object::GetClassName(){
     return name;
 };
 
+
+JavaMethod Object::LookupMethod(std::string methodName, std::vector<LibJNI::BaseJavaValue *>& arguments ) {
+    
+    auto methodCollection = FindMethod(methodName);
+    
+
+    auto validateArguments = [arguments](JavaMethod& method){
+        int index = 0;
+        
+        if(arguments.size() != method.ArgumentsType().GetNumberOfArguments())
+            return false;
+        
+        for(auto arg: arguments)
+            if(arg->GetType() != method.ArgumentsType()[index++])
+                return false;
+        
+        return true;
+    };
+    
+    auto iter = std::find_if(methodCollection.begin(), methodCollection.end(), validateArguments);
+    
+    if(iter == methodCollection.end())
+        throw VMError({ "Method found but arguments are incorrect for " + methodName });
+    
+    return *iter;
+};
 
 
 

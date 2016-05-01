@@ -9,13 +9,15 @@
 #ifndef jvm_reflect_hpp
 #define jvm_reflect_hpp
 
+
+#include <algorithm>
 #include "utils.h"
-//#include "jvm_argument.hpp"
 #include "values.hpp"
-//#include "jvm_invocation.hpp"
 #include "jvm_handler.h"
 #include "jinvoke.hpp"
+#include "args.hpp"
 
+using namespace LibJNI;
 using ObjectInterface = jobject(*)(JNIEnv *env, jobject obj, jmethodID methodID, const jvalue * args);
 using IntegerInterface = jint(*)(JNIEnv *env, jobject obj, jmethodID methodID, const jvalue * args);
 
@@ -32,11 +34,6 @@ struct JavaMethod {
     Arguments arguments;
     jmethodID methodPTR;
 }; */
-
-
-
-
-
 
 class Reflect: HandleEnv {
 private:
@@ -74,9 +71,6 @@ public:
 };
 
 
-
-
-
 class Object: HandleEnv {
 private:
     jobject object;
@@ -84,27 +78,33 @@ private:
     std::vector<JavaMethod> methods;
     
     Reflect reflect;
-   // Functor<ObjectInterface> objectMethod;
-   // Functor<IntegerInterface> intMethod;
     Invoke invoke;
     
 public:
     Object(JVMLoader env, std::string className);
     
-    JavaMethod FindMethod( std::string methodName );
+    JavaMethod FindFirstMethod( std::string methodName );
+    std::vector<JavaMethod> FindMethod( std::string methodName );
+    
+    JavaMethod LookupMethod(std::string methodName, std::vector<BaseJavaValue *>& arguments );
     
     
     template <typename T>
-    LibJNI::Value<T> Call(std::string methodName, std::vector<LibJNI::BaseJavaValue *>& arguments ) {
+    Value<T> Call(std::string methodName) {
+        std::vector<BaseJavaValue *> empty;
+        return Call<T>(methodName, empty);
+    }
+    
+    template <typename T>
+    Value<T> Call(std::string methodName, std::vector<BaseJavaValue *>& arguments) {
         
-        auto method = FindMethod(methodName);
+        auto method = LookupMethod(methodName, arguments);
         
-        auto javaValues = Arguments::Create(GetEnv(), method.ArgumentsType(), arguments);
-        // objectMethod.Call<T>(object, method.GetMethodRef(), (jvalue*)&javaValues[0]);
+        
+        auto javaValues = Arguments::Create(GetEnv(), arguments);
         
         return invoke.Call<T>(object, method.GetMethodRef(), (jvalue*)&javaValues[0]);
     }
-
     
     const std::vector<JavaMethod>& GetMembers();
     

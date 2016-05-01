@@ -17,7 +17,8 @@ class JavaMethod;
 class ArgumentTypeInfo;
 class Arguments;
 
-
+namespace LibJNI {
+    
 /*
  * Value : BaseValue
  *
@@ -25,9 +26,6 @@ class Arguments;
  *  to make a template-specialization of the type you want to handle.
  *
  */
-
-namespace LibJNI {
-    
     class BaseJavaValue {
     public:
         // Override with the value expected by JNI for java Argument.
@@ -58,6 +56,17 @@ namespace LibJNI {
         T Get() {
             return value;
         }
+    };
+    
+    
+    template <>
+    class Value<void>: public BaseJavaValue {
+
+    public:
+        typedef jobject JType;
+        
+        void Set(JEnv& env, jobject _val) {};
+        void Get() {}
     };
     
     
@@ -150,64 +159,6 @@ namespace LibJNI {
         };
     };
 }
-
-
-
-
-
-
-
-class ArgumentTypeInfo {
-public:
-    void Set(std::vector<std::string> arguments);
-    std::string operator[](int index) { return listTypes[index]; };
-    unsigned long GetNumberOfArguments(){ return parametersNumber; };
-    
-private:
-    std::vector<std::string> listTypes;
-    unsigned long parametersNumber = 0;
-};
-
-
-
-class Arguments {
-    
-private:
-    std::vector<LibJNI::BaseJavaValue *> arguments;
-    
-public:
-    
-    static std::vector<jvalue>
-    Create( JEnv jenv ,
-           ArgumentTypeInfo argumentsInfo ,
-           std::vector<LibJNI::BaseJavaValue *> arguments );
-};
-
-
-class JavaMethod: HandleEnv {
-private:
-    std::string name;
-    std::string returnTypeInfo;
-    jmethodID javaMethodRef;
-    ArgumentTypeInfo argsType;
-    
-public:
-    
-    void SetName(std::string _name){ name = _name; };
-    std::string GetName(){ return name; };
-    
-    void SetReturnTypeInfo(std::string _returnTypeInfo){ returnTypeInfo = _returnTypeInfo; };
-    std::string GetReturnTypeInfo(){ return returnTypeInfo; };
-    
-    void SetMethodByReference(jmethodID& methodId){ javaMethodRef = methodId; };
-    jmethodID GetMethodRef() { return javaMethodRef; };
-    
-    ArgumentTypeInfo& ArgumentsType(){ return argsType; };
-    
-    JavaMethod(JVMLoader loader): HandleEnv(loader) {};
-};
-
-
 
 
 #endif /* values_hpp */
