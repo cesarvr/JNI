@@ -88,20 +88,27 @@ public:
     
     JavaMethod LookupMethod(std::string methodName, std::vector<BaseJavaValue *>& arguments );
     
+   
     
     template <typename T>
-    Value<T> Call(std::string methodName) {
+    T Call(std::string methodName) {
         std::vector<BaseJavaValue *> empty;
         return Call<T>(methodName, empty);
     }
     
+    
+    
     template <typename T>
-    Value<T> Call(std::string methodName, std::vector<BaseJavaValue *>& arguments) {
+    T Call(std::string methodName, std::vector<BaseJavaValue *>& arguments) {
         
         auto method = LookupMethod(methodName, arguments);
         
         
         auto javaValues = Arguments::Create(GetEnv(), arguments);
+        
+        T tmp;
+        if(tmp.GetType() != method.GetReturnTypeInfo() && tmp.GetType() != "object" )
+            throw VMError{"Not supported type using " +tmp.GetType()+ " expected " +  method.GetReturnTypeInfo()  };
         
         return invoke.Call<T>(object, method.GetMethodRef(), (jvalue*)&javaValues[0]);
     }

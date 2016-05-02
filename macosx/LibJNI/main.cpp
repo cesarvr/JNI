@@ -44,23 +44,21 @@ std::shared_ptr<Object> test_create_str_buffer(JVMLoader& vm){
     return nullptr;
 }
 
-
-
 void testing_string_allocation(std::shared_ptr<Object> jobject, std::string h1) {
     
     std::cout << "Sleep Thread Java " << std::endl;
     
     
-    for(int x=0; x<10; x++){
-    LibJNI::Value<std::string> p1(h1);
-    
-    std::vector<LibJNI::BaseJavaValue*> args{&p1};
-    jobject->Call<void>("append", args); // (java) concat + sleep
+    for(int x=0; x<5; x++){
+       StringValue p1(h1);
+        
+        std::vector<LibJNI::BaseJavaValue*> args{&p1};
+        jobject->Call<JObject>("append", args); // (java) concat + sleep
     }
     
     
     
-    auto x = jobject->Call<std::string>("toString");
+    auto x = jobject->Call<StringValue>("toString");
     
     
     std::cout << "class name: " <<  jobject->GetClassName() << std::endl;
@@ -71,15 +69,16 @@ void testing_string_allocation(std::shared_ptr<Object> jobject, std::string h1) 
 
 
 
+// Multi-Thread Tests
+
+
+
+
+
 void errExitEN(int err, const char *msg) {
     printf("error: %d  message: %s", err, msg);
     exit(EXIT_FAILURE);
 }
-
-
-
-// Multi-Thread Tests
-
 
 static pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
 
@@ -97,14 +96,14 @@ DoTask(void *vm) {
         JVMLoader ljvm = *reinterpret_cast<JVMLoader*>(vm);
         std::shared_ptr<Object> _pdf = test_create_pdf_obj(ljvm);
         
-        LibJNI::Value<std::string> h{"Hello "};
-        LibJNI::Value<std::string> w{"World"};
-        LibJNI::Value<int> t{1000};
+        StringValue h{"Hello "};
+        StringValue w{"World"};
+        IntValue t{1000};
         
         std::vector<LibJNI::BaseJavaValue*> args {&h,&w,&t};
         
         
-        auto ret = _pdf->Call<std::string>("concatHeavy", args); // (java) concat + sleep
+        auto ret = _pdf->Call<StringValue>("concatHeavy", args); // (java) concat + sleep
         
         
         if ((mtx_status = pthread_mutex_lock(&mtx)) != 0){
@@ -165,14 +164,14 @@ void test_sleep_thread(std::shared_ptr<Object> jobject, std::string h1, int time
     std::cout << "Sleep Thread Java " << std::endl;
     
     
-    LibJNI::Value<std::string> p1(h1);
-    LibJNI::Value<std::string> p2(" ->Attach");
-    LibJNI::Value<int> p3(time);
+    StringValue p1(h1);
+    StringValue p2(" ->Attach");
+    IntValue p3(time);
     
     std::vector<LibJNI::BaseJavaValue*> args{&p1,&p2,&p3};
     
     jobject->LookupMethod("concatHeavy", args);
-    auto ret = jobject->Call<std::string>("concatHeavy", args); // (java) concat + sleep
+    auto ret = jobject->Call<StringValue>("concatHeavy", args); // (java) concat + sleep
     
     std::cout << "class name: " <<  jobject->GetClassName() << std::endl;
     std::cout << "concat heavy sleep [string] " << ret.Get() << std::endl;
@@ -181,26 +180,40 @@ void test_sleep_thread(std::shared_ptr<Object> jobject, std::string h1, int time
 
 
 
-
-
-
-
-void test_add_int(std::shared_ptr<Object> jobject,  int x, int y) {
+void test_array(std::shared_ptr<Object> object) {
     
-    LibJNI::Value<int> xx(x);
-    LibJNI::Value<int> yy(y);
+    std::cout << "Testing Array" << std::endl;
     
-    std::cout << "class name: " <<  jobject->GetClassName() << std::endl;
     
-    std::vector<LibJNI::BaseJavaValue*> args{&xx, &yy};
-    std::cout << " add " << jobject->Call<int>("add", args).Get() << std::endl;
+    StringValue p1("<HTML> <H1> Hello World </H1> <H3> Your subtitle Here!</H3>  </HTML>");
+    
+    std::vector<LibJNI::BaseJavaValue*> args{&p1};
+    
+    //auto method = jobject->LookupMethod("html2pdf", args);
+    auto method = object->LookupMethod("html2pdf", args);
+    
+    std::cout << "Method-> " << method.GetReturnTypeInfo() << std::endl;
+    
+    
+    
+    auto ret = object->Call<ByteArrayValue>("html2pdf", args);
+    
+   // auto collection = LibJNI::Collection<signed char>(vm.GetJNIEnviorment(), ret);
+    
+    auto collection = ret.Get();
+    for(auto c: collection) {
+        printf("%c", c);
+    }
     
 }
 
+
+
+
 void test_concat(std::shared_ptr<Object> jobject, std::string x, std::string y ){
     try{
-        LibJNI::Value<std::string> param1(x);
-        LibJNI::Value<std::string> param2(y);
+        StringValue param1(x);
+        StringValue param2(y);
         
         std::vector<LibJNI::BaseJavaValue*> args{&param1, &param2};
         
@@ -209,7 +222,7 @@ void test_concat(std::shared_ptr<Object> jobject, std::string x, std::string y )
             std::cout << "Value: " << param << std::endl;
         }
         
-        auto ret =  jobject->Call<std::string>("concat", args);
+        auto ret =  jobject->Call<StringValue>("concat", args);
         
         std::cout << "class name: " <<  jobject->GetClassName() << std::endl;
         std::cout << "|| concat[string] " << ret.Get() << std::endl;
@@ -220,86 +233,38 @@ void test_concat(std::shared_ptr<Object> jobject, std::string x, std::string y )
 }
 
 
-
-/* Testing supported values  */
-void testing_values(std::shared_ptr<Object> jobject, std::string x, std::string y ){
-    try{
-        
-        
-        LibJNI::Value<std::string> param1(x);
-        LibJNI::Value<std::string> param2(y);
-        
-        LibJNI::Value<int> param3(3);
-        LibJNI::Value<int> param4(5);
-        
-        
-        LibJNI::Value<float> param6(3.0f);
-        LibJNI::Value<float> param7(5.0f);
-        
-        
-        std::vector<LibJNI::BaseJavaValue*> args{&param1, &param2, &param3, &param4, &param6, &param7};
-        
-        
-        for(auto arg: args){
-            std::cout << "Param Type: " << arg->GetType() << std::endl;
-        }
-        
-        
-        
-    }catch(VMError& e){
-        std::cout << e.errorMessage << std::endl;
-    }
+void test_add_int(std::shared_ptr<Object> jobject,  int x, int y) {
+    
+    IntValue _x(x);
+    IntValue _y(y);
+    
+    std::cout << "class name: " <<  jobject->GetClassName() << std::endl;
+    
+    std::vector<LibJNI::BaseJavaValue*> args{&_x, &_y};
+    std::cout << " add " << jobject->Call<IntValue>("add", args).Get() << std::endl;
+    
+    
 }
 
 
 
-
-void test_return_type(std::shared_ptr<Object> jobject, std::string h1, int time) {
+void test_add_float_overloading(std::shared_ptr<Object> object,  float x, float y) {
     
-    std::cout << "Sleep Thread Java " << std::endl;
+    FloatValue _x(x);
+    FloatValue _y(y);
     
+    std::cout << "class name: " <<  object->GetClassName() << std::endl;
     
-    LibJNI::Value<std::string> p1(h1);
-    LibJNI::Value<std::string> p2(" ->Attach");
-    LibJNI::Value<int> p3(time);
-    
-    std::vector<LibJNI::BaseJavaValue*> args{&p3};
-    
-    auto method = jobject->LookupMethod("fff", args);
-    
-    std::cout << "Method-> " << method.GetReturnTypeInfo() << std::endl;
-
-}
-
-
-void test_array(JVMLoader& vm, std::shared_ptr<Object> object) {
-    
-    std::cout << "Testing Array" << std::endl;
+    std::vector<LibJNI::BaseJavaValue*> args{&_x, &_y};
+    std::cout << " add " << object->Call<FloatValue>("add", args).Get() << std::endl;
     
     
-    LibJNI::Value<std::string> p1("<HTML> <H1> Hello World </H1> <H3> Your subtitle Here!</H3>  </HTML>");
-    
-    std::vector<LibJNI::BaseJavaValue*> args{&p1};
-    
+    std::vector<LibJNI::BaseJavaValue*> empty;
     //auto method = jobject->LookupMethod("html2pdf", args);
-    auto method = object->LookupMethod("html2pdf", args);
-    
+    auto method = object->LookupMethod("getInts", empty);
     std::cout << "Method-> " << method.GetReturnTypeInfo() << std::endl;
     
-
-    
-    auto ret = object->Call<jobject>("html2pdf", args);
-    
-    auto collection = LibJNI::Collection<signed char>(vm.GetJNIEnviorment(), ret);
-    
-    
-    for(auto c: collection) {
-        printf("%c", c);
-    }
-    
 }
-
-
 
 
 int main(){
@@ -318,27 +283,23 @@ int main(){
     
     
     vm.SetClassPath(clazz);
-
+    
     vm.Start();
     
     std::shared_ptr<Object> _pdf = test_create_pdf_obj(vm);
     
     std::shared_ptr<Object> _str_buff = test_create_str_buffer(vm);
     
+    mthread_test(vm, 400);
+    
     try {
         
-        
-        test_array(vm, _pdf);
-      /*  test_concat(_pdf, "Kobe", "Bryant");
         test_add_int(_pdf, 3,5);
+        test_add_float_overloading(_pdf, 3.55, 1.5);
+        test_concat(_pdf, "Kobe", "Bryant");
         testing_string_allocation(_str_buff, "Hellow");
-        test_sleep_thread(_pdf, "Sleep thread", 5000); // JVM put a thread to sleep.
-        
-        mthread_test(vm, 400); // Native-side create 400 Threads and attach JVM to each Thread.
-        
-        
-        testing_values(_pdf, "Hello", "World");
-        test_return_type(_pdf, "hello", 1000); */
+        test_array( _pdf);
+   
     } catch (VMError& error) {
         std::cout << error.errorMessage << std::endl;
     }

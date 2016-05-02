@@ -19,76 +19,92 @@ class Arguments;
 
 namespace LibJNI {
     
-/*
- * Value : BaseValue
- *
- * Class in charge of handling the differents type between JAVA and C++, to implement a new type just need
- *  to make a template-specialization of the type you want to handle.
- *
- */
+    /*
+     * Value : BaseValue
+     *
+     * Class in charge of handling the differents type between JAVA and C++, to implement a new type just need
+     *  to make a template-specialization of the type you want to handle.
+     *
+     */
     class BaseJavaValue {
     public:
         // Override with the value expected by JNI for java Argument.
         virtual std::string GetType() { throw VMError{"Type not implemented yet."}; return ""; };
         
-        // JNI Array Type.
-        virtual std::string GetArrayType() { throw VMError{"Type not implemented yet."}; return ""; };
-        
-        
         //Override with the handling behavior for Native to JNI type.
         virtual jvalue GetJavaValue(JEnv& env) { throw VMError{"GetJavaValue not implemented yet for this type."}; };
     };
+
     
-    template <typename T>
+    template <class JNIType, class NativeType>
     class Value: public BaseJavaValue {
-    private:
-        T value;
     public:
-        //Value(T _val): value(_val) {};
+        Value(std::string _type): type(_type) {};
         
-        typedef jobject JType;
+        Value(std::string _type, NativeType _value):
+        type(_type),
+        value(_value) {
+        }
         
-        void Set(JEnv& env, T _val) { value = _val; };
-        T Get() {
-            return value;
+        typedef JNIType Type;
+        
+        std::string GetType() { return type; };
+        
+        void Set(JEnv& env, JNIType object) {
+            value = (NativeType) object;
+        }
+        
+        void Set(NativeType _value){
+            value = _value;
+        }
+        
+        NativeType Get(){ return value; }
+        
+        
+    protected:
+        NativeType value;
+        std::string type;
+        jvalue jniValue;
+    };
+    
+    
+    
+    struct JObject : public Value<jobject, jobject> {
+        JObject(): Value("object") {}
+    };
+    
+    struct ObjectArray : public Value<jobject, jobjectArray> {
+        ObjectArray(): Value("object") {}
+    };
+    
+    struct IntValue : public Value<jint, int> {
+
+        IntValue(): Value("int") {}
+        IntValue(int x): Value("int", x) {}
+        
+        jvalue GetJavaValue(JEnv& env) {
+            jniValue.i = value;
+            return jniValue;
         }
     };
     
-    template <>
-    class Value<void>: public BaseJavaValue {
+    struct FloatValue : public Value<jfloat, float> {
 
-    public:
-        typedef jobject JType;
+        FloatValue(): Value("float") {}
+        FloatValue(float x): Value("float", x) {}
         
-        void Set(JEnv& env, jobject _val) {};
-        void Get() {}
+        jvalue GetJavaValue(JEnv& env) {
+            jniValue.f = value;
+            return jniValue;
+        }
     };
     
-    template<>
-    class Value<std::string>: public BaseJavaValue {
-        std::string value;
-        
-    public:
-        Value(std::string _value):
-        value(_value){};
-        Value(){};
-        
-        typedef jobject JType;
-        
-        std::string GetType() {
-            return "java.lang.String";
-        };
-        
-        jvalue GetJavaValue(JEnv& env)  {
-            jvalue javaValue;
-            
-            javaValue.l =  env->NewStringUTF( value.c_str() );
-            return javaValue;
-        };
-        
-        std::string Get() { return value; };
-        
-        void Set(std::string _val) { value = _val; };
+    
+    
+    struct StringValue : public Value<jstring, std::string> {
+
+        StringValue(): Value("java.lang.String") {}
+        StringValue(std::string str): Value("java.lang.String", str) {}
         
         void Set(JEnv& env, jobject object) {
             jstring tmp = (jstring) object;
@@ -99,132 +115,36 @@ namespace LibJNI {
             value = str;
             env->ReleaseStringUTFChars( (jstring)tmp ,str );
         };
-    };
-    
-    template<>
-    class Value<int>: public BaseJavaValue {
         
-    private:
-        int value;
-        
-    public:
-        Value(int _value):
-        value(_value){};
-        Value(){};
-        typedef jint JType;
-        
-        void Set(int _val) { value = _val; };
-        void Set(JEnv& env,  jint object) { value = (int)object; }
-        
-        std::string GetType() { return "int"; };
-        
-        int Get() { return value; };
-        
-        jvalue GetJavaValue(JEnv& loader)  {
+        jvalue GetJavaValue(JEnv& env)  {
             jvalue javaValue;
-            javaValue.i =  value;
+            javaValue.l =  env->NewStringUTF( value.c_str() );
             return javaValue;
         };
+        
     };
     
+
+    /*  ====== Arrays =======    */
+
+
+    struct ByteArrayValue : public Value<jbyteArray, std::vector<signed char> > {
     
-    
-    template <class JNIType, class NativeType>
-    class MyValue: BaseJavaValue {
-    
-    };
-    
-    
-    
-    
-    
-    
-    template<>
-    class Value<signed char>: public BaseJavaValue {
+        ByteArrayValue(): Value("[B") {};
         
-    private:
-        signed char value;
-        
-    public:
-        Value(signed char _value):
-        value(_value){};
-        Value(){};
-        typedef jbyte JType;
-        
-        void Set(int _val) { value = _val; };
-        void Set(JEnv& env,  jbyte object) { value = (signed char) object; }
-        
-        std::string GetType() { return "byte"; };
-        std::string GetArrayType() { return "B"; };
-        
-        
-        int Get() { return value; };
-        
-        jvalue GetJavaValue(JEnv& loader)  {
-            jvalue javaValue;
-            javaValue.b = value;
-            return javaValue;
-        };
+        void Set(JEnv& env, jobject _array) {
+            jbyteArray array = (jbyteArray) _array;
+            jint count = env->GetArrayLength( array );
+            value.resize(count);
+            env->GetByteArrayRegion ( array , 0, count, (jbyte*)&value[0] );
+            
+            env->DeleteLocalRef(array);
+        }
     };
 
-    template<>
-    class Value<float>: public BaseJavaValue {
-        
-    private:
-        float value;
-        
-    public:
-        Value(float _value):
-        value(_value){};
-        
-        void Set(float _val) { value = _val; };
-        void Set(JEnv& env,  jfloat object) { value = (jfloat)object; }
-        
-        std::string GetType() { return "float"; };
-        
-        float Get() { return value; };
-        
-        jvalue GetJavaValue(JEnv& loader)  {
-            jvalue javaValue;
-            javaValue.i =  value;
-            return javaValue;
-        };
-    };
-    
- 
 
-    
-    
-    template <typename Data>
-    std::vector <Data> Collection(std::shared_ptr<JNIEnv> env, Value<jobject> object ) {
-        
-        auto arrayObject = object.Get();
-        
-        
-        Utils::isNull(arrayObject);
-        
-        std::vector <Data> data;
-        jint count = env->GetArrayLength( (jbyteArray) arrayObject );
-        
-        data.resize(count);
-        
-        std::unique_ptr<Data[]> buffer (new Data[count]);
-        
-        env->GetByteArrayRegion ( (jbyteArray) arrayObject , 0, count, (jbyte*)&data[0] );
-        
-        env->DeleteLocalRef(arrayObject);
-        return data;
-    }
+
 }
-
-
-
-
-
-
-
-
-
 
 
 
