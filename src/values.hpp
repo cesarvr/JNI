@@ -124,9 +124,13 @@ namespace LibJNI {
         
     };
     
+    
+    
+    
+    
+    
 
     /*  ====== Arrays =======    */
-
 
     struct ByteArrayValue : public Value<jbyteArray, std::vector<signed char> > {
     
@@ -136,14 +140,25 @@ namespace LibJNI {
             jbyteArray array = (jbyteArray) _array;
             jint count = env->GetArrayLength( array );
             value.resize(count);
-            env->GetByteArrayRegion ( array , 0, count, (jbyte*)&value[0] );
+            env->GetByteArrayRegion ( array , 0, count, &value[0] );
             
             env->DeleteLocalRef(array);
         }
     };
 
-
-
+    struct IntArrayValue : public Value<jintArray, std::vector<int> >  {
+        
+        IntArrayValue(): Value("[I") {};
+        
+        void Set(JEnv& env, jobject _array) {
+            jintArray array = (jintArray) _array;
+            jint count = env->GetArrayLength( array );
+            value.resize(count);
+            env->GetIntArrayRegion ( array , 0, count, &value[0] );
+            
+            env->DeleteLocalRef(array);
+        }
+    };
 }
 
 

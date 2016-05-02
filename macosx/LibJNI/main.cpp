@@ -180,32 +180,6 @@ void test_sleep_thread(std::shared_ptr<Object> jobject, std::string h1, int time
 
 
 
-void test_array(std::shared_ptr<Object> object) {
-    
-    std::cout << "Testing Array" << std::endl;
-    
-    
-    StringValue p1("<HTML> <H1> Hello World </H1> <H3> Your subtitle Here!</H3>  </HTML>");
-    
-    std::vector<LibJNI::BaseJavaValue*> args{&p1};
-    
-    //auto method = jobject->LookupMethod("html2pdf", args);
-    auto method = object->LookupMethod("html2pdf", args);
-    
-    std::cout << "Method-> " << method.GetReturnTypeInfo() << std::endl;
-    
-    
-    
-    auto ret = object->Call<ByteArrayValue>("html2pdf", args);
-    
-   // auto collection = LibJNI::Collection<signed char>(vm.GetJNIEnviorment(), ret);
-    
-    auto collection = ret.Get();
-    for(auto c: collection) {
-        printf("%c", c);
-    }
-    
-}
 
 
 
@@ -267,6 +241,53 @@ void test_add_float_overloading(std::shared_ptr<Object> object,  float x, float 
 }
 
 
+void test_array(std::shared_ptr<Object> object) {
+    
+    std::cout << "Testing Array" << std::endl;
+    
+    
+    StringValue p1("<HTML> <H1> Hello World </H1> <H3> Your subtitle Here!</H3>  </HTML>");
+    
+    std::vector<LibJNI::BaseJavaValue*> args{&p1};
+    
+    //auto method = jobject->LookupMethod("html2pdf", args);
+    auto method = object->LookupMethod("html2pdf", args);
+    
+    std::cout << "Method-> " << method.GetReturnTypeInfo() << std::endl;
+    
+    
+    
+    auto ret = object->Call<ByteArrayValue>("html2pdf", args);
+    
+    // auto collection = LibJNI::Collection<signed char>(vm.GetJNIEnviorment(), ret);
+    
+    auto collection = ret.Get();
+    for(auto c: collection) {
+        printf("%c", c);
+    }
+    
+}
+
+
+void test_int_array(std::shared_ptr<Object> object) {
+    
+    std::cout << "Testing INT Array" << std::endl;
+
+    
+    auto ret = object->Call<IntArrayValue>("getInts");
+    
+    // auto collection = LibJNI::Collection<signed char>(vm.GetJNIEnviorment(), ret);
+    
+    auto collection = ret.Get();
+    for(auto c: collection) {
+        printf("%d", c);
+    }
+    
+}
+
+
+
+
 int main(){
     
     //mthread_test();
@@ -296,10 +317,13 @@ int main(){
         
         test_add_int(_pdf, 3,5);
         test_add_float_overloading(_pdf, 3.55, 1.5);
-        test_concat(_pdf, "Kobe", "Bryant");
-        testing_string_allocation(_str_buff, "Hellow");
-        test_array( _pdf);
-   
+        //test_concat(_pdf, "Kobe", "Bryant");
+        //testing_string_allocation(_str_buff, "Hellow");
+        //test_array( _pdf);
+        test_int_array(_pdf);
+        
+        
+        
     } catch (VMError& error) {
         std::cout << error.errorMessage << std::endl;
     }
