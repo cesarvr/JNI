@@ -272,6 +272,36 @@ void test_return_type(std::shared_ptr<Object> jobject, std::string h1, int time)
 }
 
 
+void test_array(JVMLoader& vm, std::shared_ptr<Object> object) {
+    
+    std::cout << "Testing Array" << std::endl;
+    
+    
+    LibJNI::Value<std::string> p1("<HTML> <H1> Hello World </H1> <H3> Your subtitle Here!</H3>  </HTML>");
+    
+    std::vector<LibJNI::BaseJavaValue*> args{&p1};
+    
+    //auto method = jobject->LookupMethod("html2pdf", args);
+    auto method = object->LookupMethod("html2pdf", args);
+    
+    std::cout << "Method-> " << method.GetReturnTypeInfo() << std::endl;
+    
+
+    
+    auto ret = object->Call<jobject>("html2pdf", args);
+    
+    auto collection = LibJNI::Collection<signed char>(vm.GetJNIEnviorment(), ret);
+    
+    
+    for(auto c: collection) {
+        printf("%c", c);
+    }
+    
+}
+
+
+
+
 int main(){
     
     //mthread_test();
@@ -297,7 +327,9 @@ int main(){
     
     try {
         
-        test_concat(_pdf, "Kobe", "Bryant");
+        
+        test_array(vm, _pdf);
+      /*  test_concat(_pdf, "Kobe", "Bryant");
         test_add_int(_pdf, 3,5);
         testing_string_allocation(_str_buff, "Hellow");
         test_sleep_thread(_pdf, "Sleep thread", 5000); // JVM put a thread to sleep.
@@ -306,7 +338,7 @@ int main(){
         
         
         testing_values(_pdf, "Hello", "World");
-        test_return_type(_pdf, "hello", 1000);
+        test_return_type(_pdf, "hello", 1000); */
     } catch (VMError& error) {
         std::cout << error.errorMessage << std::endl;
     }

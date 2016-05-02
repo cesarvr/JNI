@@ -31,16 +31,12 @@ namespace LibJNI {
         // Override with the value expected by JNI for java Argument.
         virtual std::string GetType() { throw VMError{"Type not implemented yet."}; return ""; };
         
+        // JNI Array Type.
+        virtual std::string GetArrayType() { throw VMError{"Type not implemented yet."}; return ""; };
+        
+        
         //Override with the handling behavior for Native to JNI type.
         virtual jvalue GetJavaValue(JEnv& env) { throw VMError{"GetJavaValue not implemented yet for this type."}; };
-        
-        /*
-         void SetJavaValue(JEnv& env,  jobject object) { throw VMError{"SetJavaValue not implemented yet for this type."}; }
-         
-         virtual std::string GetString() { throw VMError{"GetString [string], member not supported."}; }
-         
-         virtual int GetInt() { throw VMError{"GetInt [int], member not supported."}; }
-         */
     };
     
     template <typename T>
@@ -58,7 +54,6 @@ namespace LibJNI {
         }
     };
     
-    
     template <>
     class Value<void>: public BaseJavaValue {
 
@@ -68,7 +63,6 @@ namespace LibJNI {
         void Set(JEnv& env, jobject _val) {};
         void Get() {}
     };
-    
     
     template<>
     class Value<std::string>: public BaseJavaValue {
@@ -107,7 +101,6 @@ namespace LibJNI {
         };
     };
     
-    
     template<>
     class Value<int>: public BaseJavaValue {
         
@@ -135,6 +128,45 @@ namespace LibJNI {
     };
     
     
+    
+    template <class JNIType, class NativeType>
+    class MyValue: BaseJavaValue {
+    
+    };
+    
+    
+    
+    
+    
+    
+    template<>
+    class Value<signed char>: public BaseJavaValue {
+        
+    private:
+        signed char value;
+        
+    public:
+        Value(signed char _value):
+        value(_value){};
+        Value(){};
+        typedef jbyte JType;
+        
+        void Set(int _val) { value = _val; };
+        void Set(JEnv& env,  jbyte object) { value = (signed char) object; }
+        
+        std::string GetType() { return "byte"; };
+        std::string GetArrayType() { return "B"; };
+        
+        
+        int Get() { return value; };
+        
+        jvalue GetJavaValue(JEnv& loader)  {
+            jvalue javaValue;
+            javaValue.b = value;
+            return javaValue;
+        };
+    };
+
     template<>
     class Value<float>: public BaseJavaValue {
         
@@ -158,7 +190,42 @@ namespace LibJNI {
             return javaValue;
         };
     };
+    
+ 
+
+    
+    
+    template <typename Data>
+    std::vector <Data> Collection(std::shared_ptr<JNIEnv> env, Value<jobject> object ) {
+        
+        auto arrayObject = object.Get();
+        
+        
+        Utils::isNull(arrayObject);
+        
+        std::vector <Data> data;
+        jint count = env->GetArrayLength( (jbyteArray) arrayObject );
+        
+        data.resize(count);
+        
+        std::unique_ptr<Data[]> buffer (new Data[count]);
+        
+        env->GetByteArrayRegion ( (jbyteArray) arrayObject , 0, count, (jbyte*)&data[0] );
+        
+        env->DeleteLocalRef(arrayObject);
+        return data;
+    }
 }
+
+
+
+
+
+
+
+
+
+
 
 
 #endif /* values_hpp */

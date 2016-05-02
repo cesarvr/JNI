@@ -55,6 +55,16 @@ struct Fn<JE, jint > {
     }
 };
 
+template <class JE>
+struct Fn<JE, jbyte > {
+    
+    static auto GetInterface(JE& env) ->decltype(env->functions->CallByteMethodA) {
+        return env->functions->CallByteMethodA;
+    }
+};
+
+
+
 
 struct Invoke: HandleEnv {
     
@@ -68,9 +78,6 @@ struct Invoke: HandleEnv {
         
         LibJNI::Value<T> retValue;
         using RetType = typename LibJNI::Value<T>::JType;
-        
-      //  Utils::isNull(args...);
-        
         
         RetType ret = (RetType) Wrapper(I, env, args...);
         retValue.Set(env, ret);
