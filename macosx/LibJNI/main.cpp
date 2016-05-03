@@ -287,6 +287,26 @@ void test_int_array(std::shared_ptr<Object> object) {
 
 
 
+void test_int_array_ex(std::shared_ptr<Object> object) {
+    
+    std::cout << "Testing INT Array" << std::endl;
+    
+    
+    
+    auto ret = object->Call<IntArrayValue>("getInts");
+    
+    // auto collection = LibJNI::Collection<signed char>(vm.GetJNIEnviorment(), ret);
+    
+    auto collection = ret.Get();
+    for(auto c: collection) {
+        printf("%d", c);
+    }
+    
+}
+
+
+
+
 
 int main(){
     
@@ -319,7 +339,7 @@ int main(){
         test_add_float_overloading(_pdf, 3.55, 1.5);
         //test_concat(_pdf, "Kobe", "Bryant");
         //testing_string_allocation(_str_buff, "Hellow");
-        //test_array( _pdf);
+        test_array( _pdf);
         test_int_array(_pdf);
         
         
