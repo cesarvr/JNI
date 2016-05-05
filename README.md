@@ -2,6 +2,11 @@
 Is as C++ library to encapsulate all complexity of JNI in an object oriented fashion. I make heavy use of template as an excuse to learn it and a mean to save some lines but as well I try to not compromise in simplicity. Other advantage is the use of base class polymorphism to simplify the type handling, more details [here]. 
 
 
+## API 
+
+Documentation.
+
+
 ## Requirements 
 
 ### MacOSX
@@ -35,3 +40,5 @@ One of the main goals of this project is to keep Dependencies low, so it should 
 
 
 [here]: https://github.com/cesarvr/JNI/tree/master/src
+[Documentation]: https://cesarvr.github.io/JNI/docs/jinvoke.html
+
