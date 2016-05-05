@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>utils.h</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page_wrapper">
+            <div id="jump_page">
+              
+                
+                <a class="source" href="README.html">
+                  README.md
+                </a>
+              
+                
+                <a class="source" href="args.html">
+                  args.cpp
+                </a>
+              
+                
+                <a class="source" href="args.html">
+                  args.h
+                </a>
+              
+                
+                <a class="source" href="classpath.html">
+                  classpath.cpp
+                </a>
+              
+                
+                <a class="source" href="classpath.html">
+                  classpath.h
+                </a>
+              
+                
+                <a class="source" href="jinvoke.html">
+                  jinvoke.h
+                </a>
+              
+                
+                <a class="source" href="jvm_global.html">
+                  jvm_global.h
+                </a>
+              
+                
+                <a class="source" href="jvm_handler.html">
+                  jvm_handler.cpp
+                </a>
+              
+                
+                <a class="source" href="jvm_handler.html">
+                  jvm_handler.h
+                </a>
+              
+                
+                <a class="source" href="jvm_object.html">
+                  jvm_object.cpp
+                </a>
+              
+                
+                <a class="source" href="jvm_object.html">
+                  jvm_object.h
+                </a>
+              
+                
+                <a class="source" href="utils.html">
+                  utils.h
+                </a>
+              
+                
+                <a class="source" href="values.html">
+                  values.h
+                </a>
+              
+            </div>
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>utils.h</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              <p> utils.h
+ Prueba</p>
+<p> Created by Cesar Valdez on 02/03/2016.
+ Copyright © 2016 Cesar Valdez. All rights reserved.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+<span class="hljs-meta">#ifndef utils_h</span>
+<span class="hljs-meta">#define utils_h</span>
+
+<span class="hljs-meta">#include <span class="hljs-meta-string">"jvm_global.h"</span></span>
+
+namespace Utils {
+    
+
+    
+    template&lt;<span class="hljs-keyword">typename</span> T&gt;
+    <span class="hljs-keyword">void</span> chkNull(T&amp;&amp; param){
+        assert(param != nullptr);
+    }
+    
+    template&lt;<span class="hljs-keyword">typename</span> T&gt;
+    <span class="hljs-keyword">void</span> isNull(T&amp; first) {
+        chkNull(first);
+    }
+    
+    template&lt;<span class="hljs-keyword">typename</span> T, <span class="hljs-keyword">typename</span>... Args&gt;
+    <span class="hljs-keyword">void</span> isNull(T&amp; first, Args... args) {
+        chkNull(first);
+        
+        isNull(args...);
+    }
+    
+    template &lt;<span class="hljs-keyword">typename</span> T, <span class="hljs-keyword">typename</span> R&gt;
+    std::vector&lt;R&gt; IterateJObjectArray( JEnv env, jobjectArray array, T cb ) {
+        
+        isNull(array);
+        
+        std::vector&lt;R&gt; list;
+        
+        
+        jint count = env-&gt;GetArrayLength( array );
+        
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> i=<span class="hljs-number">0</span>; i &lt; count; i++) {
+            
+            jobject element = env-&gt;GetObjectArrayElement(array, i);
+            
+            R ret = cb( env, element );
+            
+            list.push_back(ret);
+            
+            <span class="hljs-keyword">if</span>(env-&gt;ExceptionOccurred())
+                env-&gt;ExceptionDescribe();
+            
+            env-&gt;DeleteLocalRef( element );
+        }
+        <span class="hljs-keyword">return</span> list;
+    };
+    
+}
+<span class="hljs-meta">#endif /* utils.h */</span></pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

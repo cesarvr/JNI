@@ -7,8 +7,8 @@
 //
 
 #include "jvm_handler.h"
-#include "jvm_object.hpp"
-#include "classpath.hpp"
+#include "jvm_object.h"
+#include "classpath.h"
 #include <stdlib.h>
 #include <cassert>
 
@@ -206,7 +206,6 @@ void test_concat(std::shared_ptr<Object> jobject, std::string x, std::string y )
     }
 }
 
-
 void test_add_int(std::shared_ptr<Object> jobject,  int x, int y) {
     
     IntValue _x(x);
@@ -219,8 +218,6 @@ void test_add_int(std::shared_ptr<Object> jobject,  int x, int y) {
     
     
 }
-
-
 
 void test_add_float_overloading(std::shared_ptr<Object> object,  float x, float y) {
     
@@ -320,7 +317,7 @@ int main(){
         "/Users/cvaldez/Desktop/NWR/java/PDFHtml/bin"}, true);
     
     
-    std::cout << "-> " << clazz << std::endl;
+    //std::cout << "-> " << clazz << std::endl;
     
     
     vm.SetClassPath(clazz);
@@ -331,16 +328,18 @@ int main(){
     
     std::shared_ptr<Object> _str_buff = test_create_str_buffer(vm);
     
-    mthread_test(vm, 400);
     
     try {
         
-        test_add_int(_pdf, 3,5);
-        test_add_float_overloading(_pdf, 3.55, 1.5);
+        
+        test_add_int(_pdf, 5000,5000);
+        //test_add_int(_pdf, 3,5);
+        //test_add_float_overloading(_pdf, 3.55, 1.5);
         //test_concat(_pdf, "Kobe", "Bryant");
         //testing_string_allocation(_str_buff, "Hellow");
-        test_array( _pdf);
-        test_int_array(_pdf);
+      //  test_array( _pdf);
+       // test_int_array(_pdf);
+   //     mthread_test(vm, 400);
         
         
         

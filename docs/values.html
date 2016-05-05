@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>values.h</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page_wrapper">
+            <div id="jump_page">
+              
+                
+                <a class="source" href="README.html">
+                  README.md
+                </a>
+              
+                
+                <a class="source" href="args.html">
+                  args.cpp
+                </a>
+              
+                
+                <a class="source" href="args.html">
+                  args.h
+                </a>
+              
+                
+                <a class="source" href="classpath.html">
+                  classpath.cpp
+                </a>
+              
+                
+                <a class="source" href="classpath.html">
+                  classpath.h
+                </a>
+              
+                
+                <a class="source" href="jinvoke.html">
+                  jinvoke.h
+                </a>
+              
+                
+                <a class="source" href="jvm_global.html">
+                  jvm_global.h
+                </a>
+              
+                
+                <a class="source" href="jvm_handler.html">
+                  jvm_handler.cpp
+                </a>
+              
+                
+                <a class="source" href="jvm_handler.html">
+                  jvm_handler.h
+                </a>
+              
+                
+                <a class="source" href="jvm_object.html">
+                  jvm_object.cpp
+                </a>
+              
+                
+                <a class="source" href="jvm_object.html">
+                  jvm_object.h
+                </a>
+              
+                
+                <a class="source" href="utils.html">
+                  utils.h
+                </a>
+              
+                
+                <a class="source" href="values.html">
+                  values.h
+                </a>
+              
+            </div>
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>values.h</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              <p> values.h
+ LibJNI</p>
+<p> Created by Cesar Valdez on 06/04/2016.
+ Copyright © 2016 Cesar Valdez. All rights reserved.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+<span class="hljs-meta">#ifndef values_hpp</span>
+<span class="hljs-meta">#define values_hpp</span>
+
+<span class="hljs-meta">#include <span class="hljs-meta-string">"jvm_global.h"</span></span>
+<span class="hljs-meta">#include <span class="hljs-meta-string">"jvm_handler.h"</span></span>
+<span class="hljs-meta">#include <span class="hljs-meta-string">"utils.h"</span></span>
+
+class JavaMethod;
+class ArgumentTypeInfo;
+class Arguments;
+
+namespace LibJNI {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>We need to check the arguments at runtime so this class create a common interface, for interacting
+with the Value class.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    
+    class BaseJavaValue {
+    public:</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>Override with the value expected by JNI for java Argument.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        virtual std::string GetType() { throw VMError{<span class="hljs-string">"Type not implemented yet."</span>}; <span class="hljs-keyword">return</span> <span class="hljs-string">""</span>; };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>Override with the handling behavior for Native to JNI type.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        virtual jvalue GetJavaValue(JEnv&amp; env) { throw VMError{<span class="hljs-string">"GetJavaValue not implemented yet for this type."</span>}; };
+    };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>This class is in charge to handle the arguments and the return type. Here are implemented the basic
+accessors and trivials constructors.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    
+    template &lt;class JNIType, class NativeType&gt;
+    class Value: public BaseJavaValue {
+    public:
+        
+        Value(std::string _type): type(_type) {};
+        
+        Value(std::string _type, NativeType _value):
+        value(_value),
+        type(_type){}
+        
+        <span class="hljs-keyword">typedef</span> JNIType Type;
+        
+        std::string GetType() { <span class="hljs-keyword">return</span> type; };
+        
+        <span class="hljs-keyword">void</span> Set(JEnv&amp; env, JNIType object) {
+            value = (NativeType) object;
+        }
+        
+        <span class="hljs-keyword">void</span> Set(NativeType _value){
+            value = _value;
+        }
+        
+        NativeType Get(){ <span class="hljs-keyword">return</span> value; }
+        
+        
+    protected:
+        NativeType value;
+        std::string type;
+        jvalue jniValue;
+    };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>dealing with jobjects this is just reusing the accessors.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">struct</span> JObject : public Value&lt;jobject, jobject&gt; {
+        JObject(): Value(<span class="hljs-string">"object"</span>) {}
+    };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>  reusing accessors and mapping types &lt; JNI, JNI &gt;, types get cast in Set(Native),
+  so if you need more sophisticated treatment override that method.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    
+    <span class="hljs-keyword">struct</span> ObjectArray : public Value&lt;jobject, jobjectArray&gt; {
+        ObjectArray(): Value(<span class="hljs-string">"object"</span>) {}
+    };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>Here we override the BaseJavaValue::GetJavaValue, cause this data need some treatment.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    
+    
+    <span class="hljs-keyword">struct</span> IntValue : public Value&lt;jint, <span class="hljs-keyword">int</span>&gt; {
+
+        IntValue(): Value(<span class="hljs-string">"int"</span>) {}
+        IntValue(<span class="hljs-keyword">int</span> x): Value(<span class="hljs-string">"int"</span>, x) {}
+        
+        jvalue GetJavaValue(JEnv&amp; env) {
+            jniValue.i = value;
+            <span class="hljs-keyword">return</span> jniValue;
+        }
+    };
+    
+    <span class="hljs-keyword">struct</span> FloatValue : public Value&lt;jfloat, <span class="hljs-keyword">float</span>&gt; {
+
+        FloatValue(): Value(<span class="hljs-string">"float"</span>) {}
+        FloatValue(<span class="hljs-keyword">float</span> x): Value(<span class="hljs-string">"float"</span>, x) {}
+        
+        jvalue GetJavaValue(JEnv&amp; env) {
+            jniValue.f = value;
+            <span class="hljs-keyword">return</span> jniValue;
+        }
+    };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>  We override Set and GetJavaValue.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    
+    <span class="hljs-keyword">struct</span> StringValue : public Value&lt;jstring, std::string&gt; {
+
+        StringValue(): Value(<span class="hljs-string">"java.lang.String"</span>) {}
+        StringValue(std::string str): Value(<span class="hljs-string">"java.lang.String"</span>, str) {}
+        
+        <span class="hljs-keyword">void</span> Set(JEnv&amp; env, jobject object) {
+            jstring tmp = (jstring) object;
+            
+            <span class="hljs-keyword">if</span>(tmp == nullptr) value =  <span class="hljs-string">"Undefined"</span>;
+            
+            <span class="hljs-keyword">const</span> <span class="hljs-keyword">char</span> *str =env-&gt;GetStringUTFChars( (jstring)tmp , <span class="hljs-literal">NULL</span> );
+            value = str;
+            env-&gt;ReleaseStringUTFChars( (jstring)tmp ,str );
+        };
+        
+        jvalue GetJavaValue(JEnv&amp; env)  {
+            jvalue javaValue;
+            javaValue.l =  env-&gt;NewStringUTF( value.c_str() );
+            <span class="hljs-keyword">return</span> javaValue;
+        };
+        
+    };
+
+    <span class="hljs-comment">/*  ====== ArrayValue =======    */</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>   ArrayValue: T</p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p> this one is cool, cause it inherit for a generic type. In reality we want from this class the method
+ [ Set ] cause it contain a general algorithm to iterate Java native arrays and allow you to choose your
+ function pointer.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>     
+    
+    
+    template &lt;<span class="hljs-keyword">typename</span> T&gt;
+    <span class="hljs-keyword">struct</span> ArrayValue: public T {
+        <span class="hljs-keyword">typedef</span> <span class="hljs-keyword">typename</span> T::Type Type;
+        ArrayValue(std::string type): T(type) {};
+        
+        template &lt;<span class="hljs-keyword">typename</span> F&gt;
+        <span class="hljs-keyword">void</span> Set(F&amp; fn, JEnv&amp; env, jobject _array) {
+            Type array = (Type) _array;
+           
+            jint count = env-&gt;GetArrayLength( array );
+            <span class="hljs-keyword">this</span>-&gt;value.resize(count);
+            
+            fn (env.get(), array , <span class="hljs-number">0</span>, count, &amp;<span class="hljs-keyword">this</span>-&gt;value[<span class="hljs-number">0</span>] );
+            env-&gt;DeleteLocalRef(array);
+        }
+    };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>IntArrayValue</p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-13">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>
+              <p> I treat here Java native int[] arrays, so we mix [ArrayValue, Object] and then inherit their members
+ overriding the Set method that is the one we specialize before.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        
+     
+     
+    
+    
+    class IntArrayValue : public ArrayValue&lt; Value&lt;jintArray, std::vector&lt;<span class="hljs-keyword">int</span>&gt;&gt; &gt; {
+    public:
+        IntArrayValue(): ArrayValue(<span class="hljs-string">"[I"</span>) {};
+        
+        <span class="hljs-keyword">void</span> Set(JEnv&amp; env, jobject _array) {
+            ArrayValue::Set(env-&gt;functions-&gt;GetIntArrayRegion, env, _array);
+        };
+    };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-14">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>
+              <p>   ByteArrayValue</p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-15">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>
+              <p> Same as before but we change the function callback.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>     
+    
+    class ByteArrayValue : public ArrayValue&lt; Value&lt;jbyteArray, std::vector&lt;<span class="hljs-keyword">signed</span> <span class="hljs-keyword">char</span>&gt;&gt; &gt; {
+    public:
+        ByteArrayValue(): ArrayValue(<span class="hljs-string">"[B"</span>) {};
+        
+        <span class="hljs-keyword">void</span> Set(JEnv&amp; env, jobject _array) {
+            ArrayValue::Set(env-&gt;functions-&gt;GetByteArrayRegion, env, _array);
+        };
+    };
+    
+}
+
+
+
+<span class="hljs-meta">#endif /* values_hpp */</span></pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>
