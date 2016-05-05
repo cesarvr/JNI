@@ -34,4 +34,4 @@ Is in src/ folder.
 One of the main goals of this project is to keep Dependencies low, so it should run nicely by its own.
 
 
-[here]: https://github.com/cesarvr/JNI/tree/master/src
+[here]: https://cesarvr.github.io/JNI/docs/jinvoke.html
