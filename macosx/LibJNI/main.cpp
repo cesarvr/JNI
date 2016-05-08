@@ -362,7 +362,7 @@ int main() {
 
         
         TestingCtorArgs(vm);
-        Reflect r;
+
         
     } catch (VMError &error) {
         std::cout << error.errorMessage << std::endl;
