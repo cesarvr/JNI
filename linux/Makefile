@@ -26,9 +26,6 @@ $(OBJ)object.o: ./src/object.cpp ./src/object.h
 $(OBJ)reflect.o: ./src/reflect.cpp ./src/reflect.h 
 	clang++ $(OPTIONS) $(JNI) $(INCLUDE) -o $@ $<
 
-$(OBJ)object.o: ./src/reflect.cpp ./src/reflect.h 
-	clang++ $(OPTIONS) $(JNI) $(INCLUDE) -o $@ $<
-
 $(OBJ)args.o: ./src/args.cpp ./src/args.h
 	clang++ $(OPTIONS) $(JNI) $(INCLUDE) -o $@ $<
 

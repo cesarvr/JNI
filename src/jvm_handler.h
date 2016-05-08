@@ -1,7 +1,7 @@
 #ifndef jvm_loader_h
 #define jvm_loader_h
 
-
+#include <algorithm>
 #include "jvm_global.h"
 #include "utils.h"
 
