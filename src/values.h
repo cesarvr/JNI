@@ -153,14 +153,14 @@ namespace LibJNI {
         typedef typename T::Type Type;
         ArrayValue(std::string type): T(type) {};
         
-        template <typename F>
+        template <typename F, typename T>
         void Set(F& fn, JEnv& env, jobject _array) {
             Type array = (Type) _array;
            
             jint count = env->GetArrayLength( array );
             this->value.resize(count);
             
-            fn (env.get(), array , 0, count, &this->value[0] );
+            fn (env.get(), array , 0, count, (T)&this->value[0] );
             env->DeleteLocalRef(array);
         }
     };
@@ -169,27 +169,23 @@ namespace LibJNI {
     
     // IntArrayValue
      
-      //  I treat here Java native int[] arrays, so we mix [ArrayValue, Object] and then inherit their members
-      //  overriding the Set method that is the one we specialize before.
-        
-     
-     
-    
+    //  I treat here Java native int[] arrays, so we mix [ArrayValue, Object] and then inherit their members
+   //  overriding the Set method that is the one we specialize before.
     
     class IntArrayValue : public ArrayValue< Value<jintArray, std::vector<int>> > {
     public:
         IntArrayValue(): ArrayValue("[I") {};
         
         void Set(JEnv& env, jobject _array) {
-            ArrayValue::Set(env->functions->GetIntArrayRegion, env, _array);
+			auto Interface = env->functions->GetIntArrayElements;
+			ArrayValue::Set<decltype(Interface), jint>(Interface, env, _array);
         };
     };
 
   
     
-    //    ByteArrayValue
-     
-      //  Same as before but we change the function callback.
+    //    ByteArrayValue 
+    //  Same as before but we change the function callback.
      
     
     class ByteArrayValue : public ArrayValue< Value<jbyteArray, std::vector<signed char>> > {
@@ -197,7 +193,8 @@ namespace LibJNI {
         ByteArrayValue(): ArrayValue("[B") {};
         
         void Set(JEnv& env, jobject _array) {
-            ArrayValue::Set(env->functions->GetByteArrayRegion, env, _array);
+			auto Interface = env->functions->GetByteArrayElements;
+			ArrayValue::Set<decltype(Interface), jbyte>(Interface, env, _array);
         };
     };
     
