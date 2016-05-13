@@ -160,8 +160,7 @@ namespace LibJNI {
             jint count = env->GetArrayLength( array );
             this->value.resize(count);
             
-            fn (env.get(), array , 0, count, (T)&this->value[0] );
-            env->DeleteLocalRef(array);
+            fn (env.get(), array , 0, count, (T*)&this->value[0] );
         }
     };
     
@@ -177,7 +176,7 @@ namespace LibJNI {
         IntArrayValue(): ArrayValue("[I") {};
         
         void Set(JEnv& env, jobject _array) {
-			auto Interface = env->functions->GetIntArrayElements;
+			auto Interface = env->functions->GetIntArrayRegion;
 			ArrayValue::Set<decltype(Interface), jint>(Interface, env, _array);
         };
     };
@@ -193,7 +192,7 @@ namespace LibJNI {
         ByteArrayValue(): ArrayValue("[B") {};
         
         void Set(JEnv& env, jobject _array) {
-			auto Interface = env->functions->GetByteArrayElements;
+			auto Interface = env->functions->GetByteArrayRegion;
 			ArrayValue::Set<decltype(Interface), jbyte>(Interface, env, _array);
         };
     };
