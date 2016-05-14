@@ -31,7 +31,7 @@ std::shared_ptr<Object> test_create_pdf_obj(JVMLoader &vm) {
 
     Utils::isNull(vm.GetJNIEnviorment());
     assert(vm.GetJNIEnviorment() != nullptr);
-    std::shared_ptr<Object> pdfclazz(new Object(vm, "pdf/P2HService"));
+    std::shared_ptr<Object> pdfclazz(new Object(vm, "pdf.P2HService"));
     return pdfclazz;
   } catch (VMError &e) {
     std::cout << e.errorMessage << std::endl;
@@ -45,7 +45,7 @@ std::shared_ptr<Object> test_create_str_buffer(JVMLoader &vm) {
 
     Utils::isNull(vm.GetJNIEnviorment());
     assert(vm.GetJNIEnviorment() != nullptr);
-    std::shared_ptr<Object> pdfclazz(new Object(vm, "java/lang/StringBuffer"));
+    std::shared_ptr<Object> pdfclazz(new Object(vm, "java.lang.StringBuffer"));
     return pdfclazz;
   } catch (VMError &e) {
     std::cout << e.errorMessage << std::endl;
