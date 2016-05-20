@@ -85,7 +85,7 @@ public:
       return "L"+type+";";
   }
 
-  NativeType Get() { return value; }
+  NativeType& Get() { return value; }
 
 protected:
     NativeType value;
@@ -157,6 +157,20 @@ struct FloatValue : public Value<jfloat, float> {
     return jniValue;
   }
 };
+    
+    
+    
+    struct DoubleValue : public Value<jdouble, double> {
+        DoubleValue() : Value("double") {}
+        DoubleValue(float x) : Value("double", x) {}
+        
+        jvalue GetJavaValue(JEnv &env) {
+            jniValue.d = value;
+            return jniValue;
+        }
+    };
+    
+    
 
 //   We override Set and GetJavaValue.
 
@@ -183,6 +197,9 @@ struct StringValue : public Value<jstring, std::string> {
   };
 };
 
+    
+    
+    
 /*  ====== ArrayValue =======    */
 
 //    ArrayValue: T

@@ -56,7 +56,6 @@ void Object::CreateObject(JVMLoader env, std::string className, std::vector<Base
     auto tmp = Wrapper( GetEnv()->functions->NewObjectA, GetEnv(), member, constructor, (jvalue*)&javaValues[0]);
     
     object.Set(tmp);
-    reflect.SetClass(tmp);
 }
 
 
@@ -93,8 +92,10 @@ std::vector<JavaMethod> Object::FindMethod(std::string methodName) {
 
 // Lazy loading the methods.
 const std::vector<JavaMethod> &Object::GetMembers() {
-    if (methods.empty())
+    if (methods.empty()) {
+        reflect.SetClass(object.Get());
         return methods = reflect.GetMethodsDefinition();
+    }
     return methods;
 };
 
@@ -142,8 +143,6 @@ Reflect::Reflect(JVMLoader loader) : HandleEnv(loader), invoke(loader) {
     assert(GetEnv() != nullptr);
 };
 
-
-
 jmethodID Reflect::GetMethod(std::string className, std::string method,
                              std::string returnType) {
     auto env = GetEnv();
@@ -158,7 +157,7 @@ std::vector<JavaMethod> Reflect::GetMethodsDefinition() {
     auto jmethodArray =
     GetMethod(JAVA_CLASS, METHOD_GET_METHODS, ReturnArrayOf(METHOD_CLASS));
     
-    auto methodsList = invoke.Call<ObjectArray>(clazz, jmethodArray, nullptr);
+    methods = invoke.Call<ObjectArray>(clazz, jmethodArray, nullptr);
     
     auto Fn = [this](JEnv env, jobject &object) {
         JavaMethod javaMethod(GetLoader());
@@ -176,8 +175,33 @@ std::vector<JavaMethod> Reflect::GetMethodsDefinition() {
     };
     
     return Utils::IterateJObjectArray<decltype(Fn), JavaMethod>(
-                                                                GetEnv(), methodsList.Get(), Fn);
+                                                                GetEnv(), methods.Get(), Fn);
 }
+
+
+bool Reflect::ValidateArguments(std::vector<BaseJavaValue*>& values) {
+    if (arguments.size() != method.ArgumentsType().GetNumberOfArguments())
+        return false;
+    
+    for (auto arg : arguments)
+        if (arg->GetType() != method.ArgumentsType()[index++])
+            return false;
+
+}
+
+std::vector<JavaMethod> Reflect::GetMethodDefinition1(std::string& name,
+                                                      std::vector<BaseJavaValue*>& values){
+    
+   
+    
+    auto get_definition = [this, name](JEnv env, jobject object){
+        auto _name = GetName(METHOD_CLASS, object);
+        
+       // if (_name == name)
+    };
+    
+};
+
 
 std::string Reflect::GetName(std::string className, jobject object) {
     
@@ -186,8 +210,6 @@ std::string Reflect::GetName(std::string className, jobject object) {
     
     return invoke.Call<StringValue>(object, _tmp, nullptr).Get();
 }
-
-
 
 std::string Reflect::ToString(std::string className, jobject object) {
     

@@ -46,6 +46,7 @@ private:
     
     jobject clazz;
     Invoke invoke;
+    ObjectArray methods;
     
 public:
     
@@ -57,7 +58,13 @@ public:
     jmethodID GetMethod( std::string className, std::string method, std::string returnType );
     
     std::vector<JavaMethod> GetMethodsDefinition();
+    std::vector<JavaMethod> GetMethodDefinition1(std::string& name,
+                                                 std::vector<BaseJavaValue*>& values);
     
+    
+    
+    bool ValidateArguments(std::vector<BaseJavaValue*>& values);
+   
     // reflects methods.
     std::string GetReturnType(jobject object);
     std::string GetName(std::string className, jobject object);
@@ -93,6 +100,14 @@ public:
 
     std::string GetName(){ return object.GetType(); }
     
+    const std::vector<JavaMethod>& GetMembers();
+    
+    std::string GetClassName();
+    
+    void ReleaseThread(){ Release(); }
+    
+    
+    
     template <typename T>
     T Call(std::string methodName) {
         std::vector<BaseJavaValue *> empty;
@@ -108,18 +123,13 @@ public:
         
         auto javaValues = Arguments::GetValues(GetEnv(), arguments);
         
-        
         if(!tmp.isCompatible( method.GetReturnTypeInfo() ))
             throw VMError{"Not supported type using " +tmp.GetType()+ " expected " +  method.GetReturnTypeInfo()  };
         
         return invoke.Call<T>(object.Get(), method.GetMethodRef(), (jvalue*)&javaValues[0]);
     }
     
-    const std::vector<JavaMethod>& GetMembers();
-    
-    std::string GetClassName();
-    
-    void ReleaseThread(){ Release(); }
+  
 };
 
 #endif /* jvm_reflect_hpp */

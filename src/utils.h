@@ -47,8 +47,8 @@ namespace Utils {
         
         std::vector<R> list;
         
-        
         jint count = env->GetArrayLength( array );
+        list.reserve(count);
         
         for (int i=0; i < count; i++) {
             
@@ -66,6 +66,43 @@ namespace Utils {
         return list;
     };
     
+    
+    
+    // Iterate a objectArray and apply a function, if the function return true it finish.
+    // useful for quick linear search.
+    template <typename T>
+    void Seek( JEnv env, jobjectArray array, T cb ) {
+        
+        isNull(array);
+        
+        jint count = env->GetArrayLength( array );
+        
+        for (int i=0; i < count; i++) {
+            
+            jobject element = env->GetObjectArrayElement(array, i);
+            
+            auto end = cb( env, element );
+            
+            if(env->ExceptionOccurred())
+                env->ExceptionDescribe();
+            
+            env->DeleteLocalRef( element );
+            
+            if(end)
+                break;
+        }
+    };
+
+    
 }
+
+
+
+
+
+
+
+
+
 
 #endif /* utils_hpp */
