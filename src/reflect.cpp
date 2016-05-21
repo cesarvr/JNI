@@ -9,6 +9,16 @@
 #include "reflect.h"
 
 
+// Helper classes
+std::string ReturnArrayOf(std::string className) {
+    return "()[L" + className + ";";
+};
+
+std::string ReturnTypeOf(std::string className) {
+    return "()L" + className + ";";
+};
+
+
 // Reflect class contains the reflection mechanism, that allow the API to
 // instrospect the require Java object
 // garther information about the methods the user wants to execute.

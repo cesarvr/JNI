@@ -6,8 +6,8 @@
 //  Copyright © 2016 Cesar Valdez. All rights reserved.
 //
 
-#ifndef jvm_reflect_hpp
-#define jvm_reflect_hpp
+#ifndef jvm_object_hpp
+#define jvm_object_hpp
 
 
 #include <algorithm>
