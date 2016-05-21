@@ -113,7 +113,7 @@ struct Invoke: HandleEnv {
     template <typename T, typename... Args>
     T Call(Args... args) {
         
-        auto env = GetEnv();
+        auto env = Env();
         auto I =  Fn<JEnv, T>::GetInterface(env);
         
         T value;

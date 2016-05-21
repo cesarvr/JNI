@@ -20,7 +20,10 @@ $(OBJ)main.o: main.cpp
 $(OBJ)jvm_handler.o: src/jvm_handler.cpp src/jvm_handler.h
 	clang++ $(OPTIONS) $(JNI) $(INCLUDE) -o $@ $<
 
-$(OBJ)jvm_object.o: ./src/jvm_object.cpp ./src/jvm_object.h 
+$(OBJ)object.o: ./src/object.cpp ./src/object.h 
+	clang++ $(OPTIONS) $(JNI) $(INCLUDE) -o $@ $<
+
+$(OBJ)object.o: ./src/reflect.cpp ./src/reflect.h 
 	clang++ $(OPTIONS) $(JNI) $(INCLUDE) -o $@ $<
 
 $(OBJ)args.o: ./src/args.cpp ./src/args.h

@@ -41,7 +41,19 @@ struct VMError {
 using JEnv  = const std::shared_ptr<JNIEnv>;
 
 
+const std::string JAVA_METHOD_CLASS("java/lang/reflect/Method");
+const std::string JAVA_STRING_CLASS("java/lang/String");
+const std::string CLASS_DEFAULT_CTS("<init>");
+const std::string VOID_RETURN("()V");
 
+// Helper classes
+std::string ReturnArrayOf(std::string className) {
+    return "()[L" + className + ";";
+};
+
+std::string ReturnTypeOf(std::string className) {
+    return "()L" + className + ";";
+};
 
 
 #endif /* jvm_global_h */

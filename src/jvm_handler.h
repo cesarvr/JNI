@@ -53,8 +53,7 @@ private:
 public:
     HandleEnv(JVMLoader _java): java(_java){  };
     
-    const JEnv& GetEnv(){
-        Utils::isNull(java.GetJNIEnviorment());
+    const JEnv& Env(){
         return java.GetJNIEnviorment();
     };
     

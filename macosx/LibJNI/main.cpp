@@ -5,12 +5,13 @@
 //  Created by Cesar Valdez on 05/02/2016.
 
 #include "jvm_handler.h"
-#include "jvm_object.h"
+#include "object.h"
 #include "classpath.h"
 #include <stdlib.h>
 #include <cassert>
 #include <ctime>
 #include <memory>
+#include "reflect.h"
 
 #ifdef __APPLE__
 
@@ -361,8 +362,7 @@ int main() {
 
         
         TestingCtorArgs(vm);
-        
-        
+        Reflect r;
         
     } catch (VMError &error) {
         std::cout << error.errorMessage << std::endl;

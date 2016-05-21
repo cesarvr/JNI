@@ -51,7 +51,7 @@ public:
  
 //    Method structure.
 
-class JavaMethod: HandleEnv {
+class JavaMethod {
 private:
     std::string name;
     std::string returnTypeInfo;
@@ -70,8 +70,6 @@ public:
     jmethodID GetMethodRef() { return javaMethodRef; };
     
     ArgumentTypeInfo& ArgumentsType(){ return argsType; };
-    
-    JavaMethod(JVMLoader loader): HandleEnv(loader) {};
 };
 
 #endif /* args_hpp */
