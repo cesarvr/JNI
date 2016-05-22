@@ -12,7 +12,7 @@
 #include "jvm_handler.h"
 #include "utils.h"
 
-class JavaMethod;
+
 class ArgumentTypeInfo;
 class Arguments;
 

@@ -229,7 +229,7 @@ void ObjectCreationWithStringArgs(JVMLoader &vm, Server server, string msg) {
     StringValue v(msg);
     Object<Server> a(vm, server, "java.lang.String", {&v});
     
-    std::cout << "Ctor String-> " << a.Call<StringValue>("toString", {}).Get() << std::endl;
+    std::cout << "\nCtor String-> " << a.Call<StringValue>("toString", {}).Get() << std::endl;
 }
 
 
@@ -248,7 +248,8 @@ void ObjectCreationWithStringArgs(JVMLoader &vm, Server server, string msg) {
 
 void ObjectCreation(JVMLoader &vm, int size){
     Print("Object creation benchmark 100K");
-    Server server(vm);
+    Server server;
+    server.SetJVM(vm);
     for(int x=0; x<size; x++)
         std::unique_ptr<Object<Server>>( new Object<Server>(vm,server, "pdf.P2HService") );
 }
@@ -256,7 +257,8 @@ void ObjectCreation(JVMLoader &vm, int size){
 void testing_reflection_server(JVMLoader& vm){
     Print("Testing Server Class");
     
-    Server server(vm);
+    Server server;
+    server.SetJVM(vm);
     
     //for(int x=0; x<size; x++)
     Object<Server> o(vm, server, "java.lang.StringBuffer");
@@ -276,13 +278,13 @@ void testing_reflection_server(JVMLoader& vm){
     
     StringValue v{"Hello"};
     
-   auto m = server.MethodDescription(b.GetObjectValue(), "append", {&v});
+    auto m = b.GetMethodDescriptor("append", {&v});
     
     
     auto mz = server.MethodDescription(b.GetObjectValue(), "append", {&v});
     
-    cout << "method:" << m.method << std::endl;
-    cout << "return type:" << m.returnType << std::endl;
+    cout << "obj.method:" << m.method << std::endl;
+    cout << "obj.return type:" << m.returnType << std::endl;
     
     cout << "method:" << mz.method << std::endl;
     cout << "return type:" << mz.returnType << std::endl;
@@ -294,7 +296,8 @@ void testing_reflection_server(JVMLoader& vm){
 void testing_method_caching(JVMLoader& vm){
     Print("Testing StringBuffer/append 45K calls");
     
- Server server(vm);
+    Server server;
+    server.SetJVM(vm);
     
  Object<Server> a(vm, server, "java.lang.StringBuffer");
      StringValue v{"Hello"};
@@ -307,6 +310,16 @@ void testing_method_caching(JVMLoader& vm){
         server.MethodDescription(a.GetObjectValue(), "append", {&f});
     }
 }
+
+void testing_method_listing(JVMLoader& vm){
+    Server server;
+    server.SetJVM(vm);
+    Object<Server> a(vm, server, "java.lang.String");
+    
+    for(int i=0; i<10000; i++)
+        a.MethodsNames();
+}
+
 
 int main() {
     
@@ -321,20 +334,21 @@ int main() {
     try {
         
         auto clazz = ClassPath::LocateLibraries(_clzpath, true);
-        
+        Server server;
    
         vm.SetClassPath(clazz);
         
         vm.Start();
-        Server server(vm);
+    
+        server.SetJVM(vm);
         
         std::shared_ptr<Object<Server>> _pdf = test_create_pdf_obj(vm, server);
         std::shared_ptr<Object<Server>> _str_buff = test_create_str_buffer(vm,server);
         
         
+        Timing(testing_method_listing, "Listing methods", vm);
         
-        
-        //testing_reflection_server(vm);
+        /*
         
         test_add_int(_pdf, 5000, 5000);
         test_add_int(_pdf, 3, 5);
@@ -345,38 +359,8 @@ int main() {
         test_int_array(_pdf);
         ObjectCreationWithStringArgs(vm, server, "Hello world");
         
-       /*
-        std::shared_ptr<Object> _pdf = test_create_pdf_obj(vm);
-        
-        std::shared_ptr<Object> _str_buff = test_create_str_buffer(vm);
-
-        test_add_int(_pdf, 5000, 5000);
-        test_add_int(_pdf, 3, 5);
-        test_add_float_overloading(_pdf, 3.55, 1.5);
-        test_concat(_pdf, "Kobe", "Bryant");
-        testing_string_allocation(_str_buff, "Hellow");
-        
-        test_int_array(_pdf);
-        mthread_test(vm, 5);
-        
-        for (int x=0; x<10; x++)
-            std::cout << "\n";
-        
-        Timing(ObjectCreation, "creating 100000 objects", vm, 100000);
-
-        
-        TestingCtorArgs(vm);
+        testing_reflection_server(vm);
         */
-        
-        
-        
-        //Benchmark
-        //Timing(testing_method_caching,"Caching", vm);
-        //Timing(ObjectCreation, "creating 100000 objects", vm, 100000);
-        
-        
-        
-        
     } catch (VMError &error) {
         std::cout << error.errorMessage << std::endl;
     }

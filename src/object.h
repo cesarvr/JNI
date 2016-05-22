@@ -29,7 +29,6 @@ class Object: HandleEnv {
 private:
   
     string name;
-    vector<JavaMethod> methods;
     
     ObjectValue object;
     ObjectArray methodArray;
@@ -52,6 +51,11 @@ public:
     string GetName(){
         return object.GetType();
     }
+    
+    Method GetMethodDescriptor(string methodName, vector<BaseJavaValue* >&& args) {
+        return service.MethodDescription(object, methodName, move(args) );
+    }
+    
     
     
     ObjectValue& GetObjectValue() { return object;}

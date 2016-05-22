@@ -18,11 +18,12 @@ using namespace std;
 
 
 
-class Server: public HandleEnv {
+class Server {
 public:
-    Server(JVMLoader& loader): HandleEnv(loader) {};
+    Server(){};
+    void SetJVM(JVMLoader loader){ jvm = loader; };
 
-    vector<string> GetMethods(ObjectValue object);
+    vector<string>& GetMethods(ObjectValue object);
     ObjectArray GetMethodsNative(ObjectValue object);
 
     Method MethodDescription(ObjectValue object, string methodName, vector<BaseJavaValue* >&& args );
@@ -35,8 +36,14 @@ private:
     Method CreateMethod(JEnv& env, string name, jobject object, vector<BaseJavaValue* >& args);
     Method GetMethodFromCache(JEnv &env, string name, vector<LibJNI::BaseJavaValue *> &args);
     
+    const std::shared_ptr<JNIEnv>& Env(){return jvm.GetJNIEnviorment(); }
+    
     map<string, ObjectArray> mcache;
     map<string, Method> icache;
+    map<string, vector<string>> names_cache;
+    
+    
+    JVMLoader jvm;
 };
 
 
