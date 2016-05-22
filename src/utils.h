@@ -9,13 +9,16 @@
 #ifndef utils_hpp
 #define utils_hpp
 
-#include <stdio.h>
+
+
 #include "jvm_global.h"
+
+using namespace std;
 
 
 namespace Utils {
     
-    
+
 
     
     template<typename T>
@@ -34,6 +37,22 @@ namespace Utils {
         
         isNull(args...);
     }
+    
+    template <typename Collection>
+    inline bool CheckParams(Collection& values,
+                            vector<string>&& args ) {
+     
+        if(values.size() != args.size())
+            return false;
+        
+        int index=0;
+        for(auto arg: values)
+            if(arg->GetType() != args[index++])
+                return false;
+        
+        return true;
+    }
+
     
     inline std::string normalizeClassName(std::string&& classname) {
         std::replace(classname.begin(), classname.end(), '.', '/');
@@ -66,32 +85,32 @@ namespace Utils {
         }
         return list;
     };
-    
-    
-    
+
     // Iterate a objectArray and apply a function, if the function return true it finish.
     // useful for quick linear search.
-    template <typename T>
-    void Seek( JEnv env, jobjectArray array, T cb ) {
+    template <typename T, typename R>
+    bool Find( JEnv env, jobjectArray array, T cb ) {
         
         isNull(array);
         
+        bool ret = false;
         jint count = env->GetArrayLength( array );
         
         for (int i=0; i < count; i++) {
             
             jobject element = env->GetObjectArrayElement(array, i);
             
-            auto end = cb( env, element );
+            if((ret = cb( env, element )))
+                break;
             
             if(env->ExceptionOccurred())
                 env->ExceptionDescribe();
             
             env->DeleteLocalRef( element );
             
-            if(end)
-                break;
-        }
+            }
+        
+        return ret;
     };
 
     

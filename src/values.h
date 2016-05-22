@@ -64,7 +64,7 @@ public:
 
   std::string GetType() { return type; };
 
-    bool isCompatible(std::string&& _type){
+    bool isCompatible(std::string& _type){
         if( _type == type )
             return true;
         return false;
@@ -119,7 +119,7 @@ struct ObjectValue: public Value<jobject, jobject> {
     Value( Utils::normalizeClassName(std::move(className) )) {}
     
     //Override.
-    bool isCompatible(std::string&& _type){
+    bool isCompatible(std::string& _type){
         type = _type;
         return true;
     }
@@ -130,7 +130,10 @@ struct ObjectValue: public Value<jobject, jobject> {
 //   so if you need more sophisticated treatment override that method.
 
 struct ObjectArray : public Value<jobject, jobjectArray> {
-  ObjectArray() : Value("object") {}
+  ObjectArray() : Value("object") {
+      value = nullptr;
+  }
+  bool empty() { return value == nullptr; }
 };
 
 // Here we override the BaseJavaValue::GetJavaValue, cause this data need some
@@ -249,6 +252,18 @@ public:
     ArrayValue::Set<decltype(Interface), jbyte>(Interface, env, _array);
   };
 };
+    /*
+    template <typename Java, typename Native>
+    class ObjectArrayValue : public ArrayValue<Value<Java, std::vector<Native>>>{
+        
+        void Set(JEnv &env, jobject _array) {
+            auto Interface = env->functions->GetByteArrayRegion;
+            ArrayValue::Set<decltype(Interface), jbyte>(Interface, env, _array);
+        };
+    }; */
+    
 }
+
+
 
 #endif /* values_hpp */

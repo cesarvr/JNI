@@ -19,60 +19,77 @@
 #include "args.h"
 
 using namespace LibJNI;
+using namespace std;
+
+
 
 // Object encapsulate the java object and a list of methods structures.
+template <typename Broker>
 class Object: HandleEnv {
 private:
   
-    std::string name;
-    std::vector<JavaMethod> methods;
-    
-    Reflect reflect;
-    Invoke invoke;
+    string name;
+    vector<JavaMethod> methods;
     
     ObjectValue object;
+    ObjectArray methodArray;
+    Broker& service;
     
-    void CreateObject(JVMLoader env, std::string classname, std::vector<BaseJavaValue *>& arguments);
+    void CreateObject(JVMLoader env, string classname, vector<BaseJavaValue *>& arguments);
     
 public:
-    Object(JVMLoader env, std::string className);
-    Object(JVMLoader env, std::string className, std::vector<BaseJavaValue *>& arguments);
+    Object(JVMLoader env, string className);
+    Object(JVMLoader env, Broker& broker, string className);
+   
+    Object(JVMLoader env, string className, vector<BaseJavaValue *>& arguments);
+    Object(JVMLoader env, Broker& broker, string className, vector<BaseJavaValue *>&& arguments);
     
-    JavaMethod FindFirstMethod( std::string methodName );
-    std::vector<JavaMethod> FindMethod( std::string methodName );
-    
-    JavaMethod LookupMethod(std::string methodName, std::vector<BaseJavaValue *>& arguments );
-
-    std::string GetName(){ return object.GetType(); }
-    
-    const std::vector<JavaMethod>& GetMembers();
-    
-    std::string GetClassName();
-    
-
-    template <typename T>
-    T Call(std::string methodName) {
-        std::vector<BaseJavaValue *> empty;
-        return Call<T>(methodName, empty);
+    vector<string> MethodsNames() {
+        return service.GetMethods(object);
     }
     
+    // Get a qualified Java name.
+    string GetName(){
+        return object.GetType();
+    }
+    
+    
+    ObjectValue& GetObjectValue() { return object;}
+    
+    
+    
+  /*  vector<JavaMethod> FindMethod( string methodName );
+    
+    JavaMethod LookupMethod(string methodName, vector<BaseJavaValue *>& arguments );
+
+    string GetName(){ return object.GetType(); }
+    
+    const vector<JavaMethod>& GetMembers();
+    
+    string GetClassName();
+    
+
     template <typename T>
-    T Call(std::string methodName, std::vector<BaseJavaValue *>& arguments) {
+    T Call(string methodName) {
+        vector<BaseJavaValue *> empty;
+        return Call<T>(methodName, empty);
+    }
+      */
+    template <typename T>
+    T Call(string methodName, vector<BaseJavaValue *>&& arguments) {
         
         T tmp;
         JEnv jni = Env();
         
-        auto method = LookupMethod(methodName, arguments);
+        auto method = service.MethodDescription(object, methodName, move(arguments));
         
         auto javaValues = Arguments::GetValues(jni, arguments);
         
-        if(!tmp.isCompatible( method.GetReturnTypeInfo() ))
-            throw VMError{"Not supported type using " +tmp.GetType()+ " expected " +  method.GetReturnTypeInfo()  };
+        if(!tmp.isCompatible( method.returnType  ))
+            throw VMError{"Not supported type using " +tmp.GetType()+ " expected " +  method.returnType  };
         
-        return invoke.Call<T>(object.Get(), method.GetMethodRef(), (jvalue*)&javaValues[0]);
+        return Invoke::Call<T>(jni, object.Get(), method.method, (jvalue*)&javaValues[0]);
     }
-    
-  
 };
 
 #endif /* jvm_reflect_hpp */

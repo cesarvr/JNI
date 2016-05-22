@@ -15,48 +15,42 @@
 #include "jinvoke.h"
 #include "args.h"
 
-// this encapsulate all Java reflection functionality.
-class Reflect: HandleEnv {
-private:
-    
-    const std::string JAVA_CLASS = "java/lang/Class";
-    const std::string METHOD_CLASS = "java/lang/reflect/Method";
-    const std::string METHOD_CONSTRUCTOR = "java/lang/reflect/Constructor";
-    
-    const std::string METHOD_GET_CLASS = "getClass";
-    const std::string METHOD_GET_METHODS = "getMethods";
-    const std::string METHOD_RETURN_TYPE = "getReturnType";
-    const std::string METHOD_TOSTRING = "toString";
-    const std::string METHOD_GET_NAME = "getName";
-    const std::string METHOD_GET_PARAMETER = "getParameterTypes";
-    
-    jobject clazz;
-    Invoke invoke;
-    ObjectArray methods;
+using namespace std;
+
+const string JAVA_CLASS = "java/lang/Class";
+const string METHOD_CLASS = "java/lang/reflect/Method";
+const string METHOD_CONSTRUCTOR = "java/lang/reflect/Constructor";
+
+const string METHOD_GET_CLASS = "getClass";
+const string METHOD_GET_METHODS = "getMethods";
+const string METHOD_RETURN_TYPE = "getReturnType";
+const string METHOD_TOSTRING = "toString";
+const string METHOD_GET_NAME = "getName";
+const string METHOD_GET_PARAMETER = "getParameterTypes";
+
+// Reflect class contains the reflection mechanism, that allow the API to
+// instrospect the require Java object
+// garther information about the methods the user wants to execute.
+class Reflect {
     
 public:
     
-    void SetClass(jobject object);
-    jobject GetReflectClass();
+    static jmethodID GetMethod(JEnv& env, string className, string method, string returnType );
+    static ObjectArray GetMethodsArray(JEnv& env, ObjectValue clazz);
     
-    Reflect(JVMLoader env);
+    static ObjectValue GetClass(JEnv& env, ObjectValue& object);
+    static std::vector<string> GetMethodsNames(JEnv& env, ObjectArray methods);
     
-    jmethodID GetMethod( std::string className, std::string method, std::string returnType );
+    static jmethodID GetMethodReference(JEnv& env, jobject object);
     
-    std::vector<JavaMethod> GetMethodsDefinition();
-    std::vector<JavaMethod> GetMethodDefinition1(std::string& name,
-                                                 std::vector<BaseJavaValue*>& values);
-    
-    
-    
-    bool ValidateArguments(std::vector<BaseJavaValue*>& values);
     
     // reflects methods.
-    std::string GetReturnType(jobject object);
-    std::string GetName(std::string className, jobject object);
-    std::string ToString(std::string className, jobject object);
+    static string GetReturnType(JEnv& env, jobject object);
+    static string GetName(JEnv& env, jobject object);
+    static string GetName(JEnv& env, string methodName,  jobject object);
+    static string ToString(JEnv& env, string className, jobject object);
     
-    std::vector<std::string> GetParameters(jobject object);
+    static std::vector<string> GetParameters(JEnv& env, jobject object);
 };
 
 
