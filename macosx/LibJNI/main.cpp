@@ -31,7 +31,20 @@ std::vector<std::string> _clzpath = {"../../demo/lib/", "../../demo/PDFHtml/"};
 
 #endif
 
-
+static unsigned long x=123456789, y=362436069, z=521288629;
+unsigned long xorshf96(void) {          //period 2^96-1
+    unsigned long t;
+    x ^= x << 16;
+    x ^= x >> 5;
+    x ^= x << 1;
+    
+    t = x;
+    x = y;
+    y = z;
+    z = t ^ x ^ y;
+    
+    return z;
+}
 
 void Print(std::string&& str) {
     
@@ -124,7 +137,7 @@ void test_concat(std::shared_ptr<Object<Server>> jobject, std::string x,
         
         Print("test_concat: testing strings args");
         
-        
+
         StringValue param1(x);
         StringValue param2(y);
         
@@ -304,21 +317,71 @@ void testing_method_caching(JVMLoader& vm){
     IntValue x{1};
     FloatValue f{1.0};
     
-    for(int i=0; i<15000; i++){
+    for(int i=0; i<1; i++){
         server.MethodDescription(a.GetObjectValue(), "append", {&v});
-        server.MethodDescription(a.GetObjectValue(), "append", {&x});
-        server.MethodDescription(a.GetObjectValue(), "append", {&f});
+      //  server.MethodDescription(a.GetObjectValue(), "append", {&x});
+       // server.MethodDescription(a.GetObjectValue(), "append", {&f});
     }
 }
 
 void testing_method_listing(JVMLoader& vm){
     Server server;
     server.SetJVM(vm);
-    Object<Server> a(vm, server, "java.lang.String");
     
-    for(int i=0; i<10000; i++)
-        a.MethodsNames();
+    
+    for(int i=0; i<10000; i++){
+        std::shared_ptr<Object<Server>> a(new Object<Server>(vm,server, "java.lang.String"));
+        //a->MethodsNames();
+        //a->Call<IntValue>("hashCode", {});
+        xorshf96();
+    }
 }
+
+
+void testing_instance(JVMLoader& vm){
+    Server server;
+    server.SetJVM(vm);
+    
+    
+    StringValue v{"Hello World"};
+    std::shared_ptr<Object<Server>> a(new Object<Server>(vm,server, "java.lang.StringBuilder", {&v}));
+    auto methods = a->MethodsNames();
+    
+    StringValue m(" Boom!!");
+    a->Call<ObjectValue>("append", {&m});
+    
+    cout << "StringBuilder: " << a->Call<StringValue>("toString",{}).Get() << endl;
+    
+    
+    Object<Server> b(vm, server, "java.lang.StringBuffer");
+    StringValue mx{"Hello"};
+    IntValue x{1};
+    FloatValue f{1.0};
+    
+    for(int i=0; i<100; i++){
+        server.MethodDescription(b.GetObjectValue(), "append", {&mx});
+        b.Call<ObjectValue>("append",{&mx});
+    }
+    cout << "java.lang.StringBuffer: " << b.Call<StringValue>("toString",{}).Get() << endl;
+    
+    //for(auto method: methods)
+     // std::cout << method << std::endl;
+    Object<Server> _clazz(vm,server, "pdf.P2HService");
+    StringValue param1("Hello ");
+    StringValue param2("World");
+    IntValue param3(5000);
+    std::vector<LibJNI::BaseJavaValue *> args{&param1, &param2, &param3};
+    
+    for (auto param : args) {
+        std::cout << "Params Type: " << param->GetType() << std::endl;
+        std::cout << "Value: " << param << std::endl;
+    }
+    
+    auto ret = _clazz.Call<StringValue>("concatHeavy", move(args));
+    
+    cout << "PDFService: " <<ret.Get() << endl;
+}
+
 
 
 int main() {
@@ -346,11 +409,12 @@ int main() {
         std::shared_ptr<Object<Server>> _str_buff = test_create_str_buffer(vm,server);
         
         
-        Timing(testing_method_listing, "Listing methods", vm);
+        //Timing(testing_method_listing, "Listing methods", vm);
+        Timing(testing_instance, "Listing methods", vm);
+        /*Timing(testing_method_caching, "method caching", vm);
+
         
-        /*
-        
-        test_add_int(_pdf, 5000, 5000);
+        //test_add_int(_pdf, 5000, 5000);
         test_add_int(_pdf, 3, 5);
         test_add_float_overloading(_pdf, 3.55, 1.5);
         test_concat(_pdf, "Kobe", "Bryant");
@@ -359,8 +423,8 @@ int main() {
         test_int_array(_pdf);
         ObjectCreationWithStringArgs(vm, server, "Hello world");
         
-        testing_reflection_server(vm);
-        */
+        testing_reflection_server(vm);*/
+
     } catch (VMError &error) {
         std::cout << error.errorMessage << std::endl;
     }
