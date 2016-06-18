@@ -65,13 +65,38 @@
                 </a>
               
                 
-                <a class="source" href="jvm_object.html">
-                  jvm_object.cpp
+                <a class="source" href="object.html">
+                  object.cpp
                 </a>
               
                 
-                <a class="source" href="jvm_object.html">
-                  jvm_object.h
+                <a class="source" href="object.html">
+                  object.h
+                </a>
+              
+                
+                <a class="source" href="reflect.html">
+                  reflect.cpp
+                </a>
+              
+                
+                <a class="source" href="reflect.html">
+                  reflect.h
+                </a>
+              
+                
+                <a class="source" href="server.html">
+                  server.cpp
+                </a>
+              
+                
+                <a class="source" href="server.html">
+                  server.h
+                </a>
+              
+                
+                <a class="source" href="utils.html">
+                  utils.cpp
                 </a>
               
                 
@@ -111,7 +136,7 @@
             <div class="content"><div class='highlight'><pre><span class="hljs-meta">#ifndef jvm_loader_h</span>
 <span class="hljs-meta">#define jvm_loader_h</span>
 
-
+<span class="hljs-meta">#include <span class="hljs-meta-string">&lt;algorithm&gt;</span></span>
 <span class="hljs-meta">#include <span class="hljs-meta-string">"jvm_global.h"</span></span>
 <span class="hljs-meta">#include <span class="hljs-meta-string">"utils.h"</span></span>
 
@@ -206,8 +231,7 @@ private:
 public:
     HandleEnv(JVMLoader _java): java(_java){  };
     
-    <span class="hljs-keyword">const</span> JEnv&amp; GetEnv(){
-        Utils::isNull(java.GetJNIEnviorment());
+    <span class="hljs-keyword">const</span> JEnv&amp; Env(){
         <span class="hljs-keyword">return</span> java.GetJNIEnviorment();
     };
     

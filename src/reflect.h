@@ -17,6 +17,13 @@
 
 using namespace std;
 
+
+
+
+// Reflect class contains the reflection mechanism, that allow the API to
+// instrospect the require Java object
+// garther information about the methods the user wants to execute.
+
 const string JAVA_CLASS = "java/lang/Class";
 const string METHOD_CLASS = "java/lang/reflect/Method";
 const string METHOD_CONSTRUCTOR = "java/lang/reflect/Constructor";
@@ -28,9 +35,7 @@ const string METHOD_TOSTRING = "toString";
 const string METHOD_GET_NAME = "getName";
 const string METHOD_GET_PARAMETER = "getParameterTypes";
 
-// Reflect class contains the reflection mechanism, that allow the API to
-// instrospect the require Java object
-// garther information about the methods the user wants to execute.
+
 class Reflect {
     
 public:

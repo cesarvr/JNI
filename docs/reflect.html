@@ -2,7 +2,7 @@
 
 <html>
 <head>
-  <title>args.h</title>
+  <title>reflect.h</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
   <link rel="stylesheet" media="all" href="docco.css" />
@@ -118,7 +118,7 @@
         
           <li id="title">
               <div class="annotation">
-                  <h1>args.h</h1>
+                  <h1>reflect.h</h1>
               </div>
           </li>
         
@@ -130,18 +130,24 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-1">&#182;</a>
               </div>
-              <p> args.h
+              <p> jvm_reflect.hpp
  LibJNI</p>
-<p> Created by Cesar Valdez on 20/04/2016.
+<p> Created by Cesar Valdez on 21/05/2016.
  Copyright © 2016 Cesar Valdez. All rights reserved.</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>
-<span class="hljs-meta">#ifndef args_hpp</span>
-<span class="hljs-meta">#define args_hpp</span>
+<span class="hljs-meta">#ifndef jvm_reflect_hpp</span>
+<span class="hljs-meta">#define jvm_reflect_hpp</span>
 
-<span class="hljs-meta">#include <span class="hljs-meta-string">"values.h"</span></span></pre></div></div>
+<span class="hljs-meta">#include <span class="hljs-meta-string">&lt;algorithm&gt;</span></span>
+<span class="hljs-meta">#include <span class="hljs-meta-string">"utils.h"</span></span>
+<span class="hljs-meta">#include <span class="hljs-meta-string">"jvm_handler.h"</span></span>
+<span class="hljs-meta">#include <span class="hljs-meta-string">"jinvoke.h"</span></span>
+<span class="hljs-meta">#include <span class="hljs-meta-string">"args.h"</span></span>
+
+using namespace std;</pre></div></div>
             
         </li>
         
@@ -152,27 +158,60 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-2">&#182;</a>
               </div>
-              <p>Take care of the transformation between (C++)Data to (JNI) jvalue</p>
+              <p>Reflect class contains the reflection mechanism, that allow the API to
+instrospect the require Java object
+garther information about the methods the user wants to execute.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>class Arguments {
-private:
-    std::vector&lt;LibJNI::BaseJavaValue *&gt; arguments;
+            <div class="content"><div class='highlight'><pre>
+<span class="hljs-keyword">const</span> string J<span class="hljs-built_in">AVA_CLASS</span> = <span class="hljs-string">"java/lang/Class"</span>;
+<span class="hljs-keyword">const</span> string METHOD_CLASS = <span class="hljs-string">"java/lang/reflect/Method"</span>;
+<span class="hljs-keyword">const</span> string METHOD_CO<span class="hljs-built_in">NSTRUCTOR</span> = <span class="hljs-string">"java/lang/reflect/Constructor"</span>;
+
+<span class="hljs-keyword">const</span> string METHOD_GET_CLASS = <span class="hljs-string">"getClass"</span>;
+<span class="hljs-keyword">const</span> string METHOD_GET_METHODS = <span class="hljs-string">"getMethods"</span>;
+<span class="hljs-keyword">const</span> string METHOD_RETURN_TYPE = <span class="hljs-string">"getReturnType"</span>;
+<span class="hljs-keyword">const</span> string METHOD_TOSTRING = <span class="hljs-string">"toString"</span>;
+<span class="hljs-keyword">const</span> string METHOD_GET_NAME = <span class="hljs-string">"getName"</span>;
+<span class="hljs-keyword">const</span> string METHOD_GET_PARAMETER = <span class="hljs-string">"getParameterTypes"</span>;
+
+
+class Reflect {
     
 public:
     
-    <span class="hljs-keyword">static</span> std::vector&lt;jvalue&gt;
-    GetValues( JEnv jenv ,
-           std::vector&lt;LibJNI::BaseJavaValue *&gt; arguments );
+    <span class="hljs-keyword">static</span> jmethodID GetMethod(JEnv&amp; env, string className, string method, string returnType );
+    <span class="hljs-keyword">static</span> ObjectArray GetMethodsArray(JEnv&amp; env, ObjectValue clazz);
     
-    <span class="hljs-keyword">static</span> std::string GetConstructorSignature( JEnv jenv ,
-                            std::vector&lt;LibJNI::BaseJavaValue *&gt; arguments );
+    <span class="hljs-keyword">static</span> ObjectValue GetClass(JEnv&amp; env, ObjectValue&amp; object);
+    <span class="hljs-keyword">static</span> std::vector&lt;string&gt; GetMethodsNames(JEnv&amp; env, ObjectArray methods);
+    
+    <span class="hljs-keyword">static</span> jmethodID GetMethodReference(string alias, JEnv&amp; env, jobject object);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>reflects methods.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">static</span> string GetReturnType(JEnv&amp; env, jobject object);
+    <span class="hljs-keyword">static</span> string GetName(JEnv&amp; env, jobject object);
+    <span class="hljs-keyword">static</span> string GetName(JEnv&amp; env, string methodName,  jobject object);
+    <span class="hljs-keyword">static</span> string ToString(JEnv&amp; env, string className, jobject object);
+    
+    <span class="hljs-keyword">static</span> std::vector&lt;string&gt; GetParameters(JEnv&amp; env, jobject object);
 };
 
 
-
-<span class="hljs-meta">#endif /* args_hpp */</span></pre></div></div>
+<span class="hljs-meta">#endif /* jvm_reflect_hpp */</span></pre></div></div>
             
         </li>
         

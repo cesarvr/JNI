@@ -2,7 +2,7 @@
 
 <html>
 <head>
-  <title>jinvoke.h</title>
+  <title>server.h</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
   <link rel="stylesheet" media="all" href="docco.css" />
@@ -118,7 +118,7 @@
         
           <li id="title">
               <div class="annotation">
-                  <h1>jinvoke.h</h1>
+                  <h1>server.h</h1>
               </div>
           </li>
         
@@ -130,23 +130,23 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-1">&#182;</a>
               </div>
-              <p> java_invoke.h
+              <p> server.hpp
  LibJNI</p>
-<p> Created by Cesar Valdez on 14/04/2016.
+<p> Created by Cesar Valdez on 21/05/2016.
  Copyright © 2016 Cesar Valdez. All rights reserved.</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>
-<span class="hljs-meta">#ifndef java_invoke_hpp</span>
-<span class="hljs-meta">#define java_invoke_hpp</span>
-
-<span class="hljs-meta">#include <span class="hljs-meta-string">"jvm_handler.h"</span></span>
-<span class="hljs-meta">#include <span class="hljs-meta-string">"utils.h"</span></span>
-<span class="hljs-meta">#include <span class="hljs-meta-string">"values.h"</span></span>
+<span class="hljs-meta">#ifndef server_hpp</span>
+<span class="hljs-meta">#define server_hpp</span>
 
 
-using namespace LibJNI;</pre></div></div>
+<span class="hljs-meta">#include <span class="hljs-meta-string">&lt;utility&gt;</span></span>
+<span class="hljs-meta">#include <span class="hljs-meta-string">&lt;map&gt;</span></span>
+<span class="hljs-meta">#include <span class="hljs-meta-string">"reflect.h"</span></span>
+
+using namespace std;</pre></div></div>
             
         </li>
         
@@ -157,52 +157,15 @@ using namespace LibJNI;</pre></div></div>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-2">&#182;</a>
               </div>
-              <p>   Wraps the call with:</p>
-<pre><code> - Execption handling.
- - Nullpointer checking.
- - Check VM status.
-</code></pre>
+              <p>Server class, is the Broker class in charge of calling provide access and caching for Reflect class.</p>
+
             </div>
             
             <div class="content"><div class='highlight'><pre>
-template &lt;<span class="hljs-keyword">typename</span> Function, <span class="hljs-keyword">typename</span> ...Args&gt;
-auto Wrapper(Function&amp;&amp; func, JEnv env, Args&amp;&amp;... args)
--&gt; decltype(func(env.get(), args...))
-{
-    try {
-        
-        assert(func != nullptr);
-        assert(env != nullptr);
-        
-        auto retValue = func(env.get(), args...);
-        
-        <span class="hljs-keyword">if</span> (env-&gt;ExceptionCheck()){
-            env-&gt;ExceptionDescribe();
-            throw VMError{<span class="hljs-string">"JVM Exception thrown"</span>};
-        }
-        
-        <span class="hljs-keyword">return</span> retValue;
-    }catch(VMError&amp; error){
-        throw error;
-    };
-}
-
-
-template &lt;<span class="hljs-keyword">typename</span> Function, <span class="hljs-keyword">typename</span> ...Args&gt;
-auto Memoization(string alias, Function&amp;&amp; func, JEnv env, Args&amp;&amp;... args)
--&gt; decltype(func(env.get(), args...))
-{
-    <span class="hljs-keyword">static</span> vector&lt; pair&lt;string, decltype(func(env.get(), args...))&gt; &gt; memo;
-    
-    <span class="hljs-keyword">for</span>(auto m: memo)
-        <span class="hljs-keyword">if</span>(m.first == alias)
-            <span class="hljs-keyword">return</span> m.second;
-    
-    auto ret = func(env.get(), args...);
-    
-    memo.push_back(make_pair(alias, ret));
-    <span class="hljs-keyword">return</span> ret;
-}</pre></div></div>
+class Server {
+public:
+    Server(){};
+    <span class="hljs-keyword">void</span> SetJVM(JVMLoader loader){ jvm = loader; };</pre></div></div>
             
         </li>
         
@@ -213,12 +176,11 @@ auto Memoization(string alias, Function&amp;&amp; func, JEnv env, Args&amp;&amp;
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-3">&#182;</a>
               </div>
-              <p>Return the right function to call the JVM depending on the template parameter.</p>
+              <p>Get list of methods as strings is cheaper to get it this way than the native description of all methods.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>template &lt;class JE, <span class="hljs-keyword">typename</span> T&gt;
-<span class="hljs-keyword">struct</span> Fn{</pre></div></div>
+            <div class="content"><div class='highlight'><pre>    vector&lt;string&gt;&amp; GetMethods(ObjectValue object);</pre></div></div>
             
         </li>
         
@@ -229,53 +191,11 @@ auto Memoization(string alias, Function&amp;&amp; func, JEnv env, Args&amp;&amp;
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-4">&#182;</a>
               </div>
-              <p>handle this JNI calls.</p>
+              <p>Lazy-load and cache the JNI method.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    
-    <span class="hljs-keyword">static</span> auto GetInterface(JE&amp; env) -&gt;decltype(env-&gt;functions-&gt;CallObjectMethodA) {
-        <span class="hljs-keyword">return</span> env-&gt;functions-&gt;CallObjectMethodA;
-    }
-};
-
-template &lt;class JE&gt;
-<span class="hljs-keyword">struct</span> Fn&lt;JE, IntValue &gt; {
-    
-    <span class="hljs-keyword">static</span> auto GetInterface(JE&amp; env) -&gt;decltype(env-&gt;functions-&gt;CallIntMethodA) {
-        <span class="hljs-keyword">return</span> env-&gt;functions-&gt;CallIntMethodA;
-    }
-};
-
-
-template &lt;class JE&gt;
-<span class="hljs-keyword">struct</span> Fn&lt;JE, FloatValue &gt; {
-    
-    <span class="hljs-keyword">static</span> auto GetInterface(JE&amp; env) -&gt;decltype(env-&gt;functions-&gt;CallFloatMethodA) {
-        <span class="hljs-keyword">return</span> env-&gt;functions-&gt;CallFloatMethodA;
-    }
-};
-
-
-template &lt;class JE&gt;
-<span class="hljs-keyword">struct</span> Fn&lt;JE, jbyte &gt; {
-    
-    using ReturnType = jbyte;
-    
-    <span class="hljs-keyword">static</span> auto GetInterface(JE&amp; env) -&gt;decltype(env-&gt;functions-&gt;CallByteMethodA) {
-        <span class="hljs-keyword">return</span> env-&gt;functions-&gt;CallByteMethodA;
-    }
-};
-
-template &lt;class JE&gt;
-<span class="hljs-keyword">struct</span> Fn&lt;JE, DoubleValue &gt; {
-    
-    using ReturnType = jbyte;
-    
-    <span class="hljs-keyword">static</span> auto GetInterface(JE&amp; env) -&gt;decltype(env-&gt;functions-&gt;CallDoubleMethodA) {
-        <span class="hljs-keyword">return</span> env-&gt;functions-&gt;CallDoubleMethodA;
-    }
-};</pre></div></div>
+            <div class="content"><div class='highlight'><pre>    ObjectArray GetMethodsNative(ObjectValue object);</pre></div></div>
             
         </li>
         
@@ -286,11 +206,11 @@ template &lt;class JE&gt;
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-5">&#182;</a>
               </div>
-              <p>This take charge of the invocation.</p>
+              <p>TODO</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">struct</span> Invoke{</pre></div></div>
+            <div class="content"><div class='highlight'><pre>    vector&lt;Method&gt; MethodDesc( ObjectValue&amp; object, string methodName );</pre></div></div>
             
         </li>
         
@@ -301,32 +221,61 @@ template &lt;class JE&gt;
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-6">&#182;</a>
               </div>
-              <p>Make the call to the JVM with the right method, then it use the method Set with the following
-signature Set(JEN, value) and place the value inside the object, the object can be any object that
-that agreed with that method, this make this class flexible for other value implementation.</p>
+              <p>Return the Method signature param and return type.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    
-    template &lt;<span class="hljs-keyword">typename</span> T, <span class="hljs-keyword">typename</span>... Args&gt;
-    <span class="hljs-keyword">static</span> T Call(JEnv&amp; env, Args... args) {
+            <div class="content"><div class='highlight'><pre>    Method MethodDescription( ObjectValue object, string methodName, vector&lt;BaseJavaValue* &gt;&amp;&amp; args );</pre></div></div>
+            
+        </li>
         
-        auto I =  Fn&lt;JEnv, T&gt;::GetInterface(env);
         
-        T value;
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>Get native java.lang.Class instance from JNI.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    ObjectValue GetClass( LibJNI::ObjectValue&amp; object );
+    
+    ~Server();
+    
+private:
+    Method CreateMethod(JEnv&amp; env, string name, jobject object, vector&lt;BaseJavaValue* &gt;&amp; args);
+    Method GetMethodFromCache(JEnv &amp;env, string name, vector&lt;LibJNI::BaseJavaValue *&gt; &amp;args);</pre></div></div>
+            
+        </li>
         
-        auto ret = Wrapper(I, env, args...);
         
-        value.Set(env, ret);
-        
-        <span class="hljs-keyword">return</span> value;
-    }
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>Create an alias for the JNI method son can be use</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    string CreateSignature( string methodName, vector&lt;BaseJavaValue*&gt;&amp; args);
+    
+    <span class="hljs-keyword">const</span> std::shared_ptr&lt;JNIEnv&gt;&amp; Env(){<span class="hljs-keyword">return</span> jvm.GetJNIEnviorment(); }
+    
+    map&lt;string, ObjectArray&gt; mcache;
+    map&lt;string, Method&gt; icache;
+    map&lt;string, vector&lt;string&gt;&gt; names_cache;
+    map&lt;string, ObjectValue&gt; class_cache;
+    
+    
+    JVMLoader jvm;
 };
 
 
-
-
-<span class="hljs-meta">#endif /* java_invoke_hpp */</span></pre></div></div>
+<span class="hljs-meta">#endif /* server_hpp */</span></pre></div></div>
             
         </li>
         

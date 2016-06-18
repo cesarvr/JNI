@@ -65,13 +65,38 @@
                 </a>
               
                 
-                <a class="source" href="jvm_object.html">
-                  jvm_object.cpp
+                <a class="source" href="object.html">
+                  object.cpp
                 </a>
               
                 
-                <a class="source" href="jvm_object.html">
-                  jvm_object.h
+                <a class="source" href="object.html">
+                  object.h
+                </a>
+              
+                
+                <a class="source" href="reflect.html">
+                  reflect.cpp
+                </a>
+              
+                
+                <a class="source" href="reflect.html">
+                  reflect.h
+                </a>
+              
+                
+                <a class="source" href="server.html">
+                  server.cpp
+                </a>
+              
+                
+                <a class="source" href="server.html">
+                  server.h
+                </a>
+              
+                
+                <a class="source" href="utils.html">
+                  utils.cpp
                 </a>
               
                 
@@ -117,18 +142,28 @@
 <span class="hljs-meta">#define classpath_hpp</span>
 
 <span class="hljs-meta">#include <span class="hljs-meta-string">&lt;iostream&gt;</span></span>
-<span class="hljs-meta">#include <span class="hljs-meta-string">&lt;dirent.h&gt;</span></span>
 <span class="hljs-meta">#include <span class="hljs-meta-string">&lt;algorithm&gt;</span></span>
 
 <span class="hljs-meta">#include <span class="hljs-meta-string">&lt;sys/types.h&gt;</span></span>
 <span class="hljs-meta">#include <span class="hljs-meta-string">&lt;sys/stat.h&gt;</span></span>
-<span class="hljs-meta">#include <span class="hljs-meta-string">&lt;unistd.h&gt;</span></span>
-
-<span class="hljs-meta">#include <span class="hljs-meta-string">"jvm_global.h"</span></span>
 
 
-<span class="hljs-comment">/* Classpath handle here allowing recursive search for .jar and .class */</span>
+<span class="hljs-meta">#include <span class="hljs-meta-string">"jvm_global.h"</span></span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>Classpath handle the location of libs and allows recursive search for .jar and .class.</p>
 
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
 class ClassPath {
 
     

@@ -65,13 +65,38 @@
                 </a>
               
                 
-                <a class="source" href="jvm_object.html">
-                  jvm_object.cpp
+                <a class="source" href="object.html">
+                  object.cpp
                 </a>
               
                 
-                <a class="source" href="jvm_object.html">
-                  jvm_object.h
+                <a class="source" href="object.html">
+                  object.h
+                </a>
+              
+                
+                <a class="source" href="reflect.html">
+                  reflect.cpp
+                </a>
+              
+                
+                <a class="source" href="reflect.html">
+                  reflect.h
+                </a>
+              
+                
+                <a class="source" href="server.html">
+                  server.cpp
+                </a>
+              
+                
+                <a class="source" href="server.html">
+                  server.h
+                </a>
+              
+                
+                <a class="source" href="utils.html">
+                  utils.cpp
                 </a>
               
                 
@@ -105,21 +130,27 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-1">&#182;</a>
               </div>
-              <p> utils.h
- Prueba</p>
-<p> Created by Cesar Valdez on 02/03/2016.
+              <p> utils.hpp
+ LibJNI</p>
+<p> Created by Cesar Valdez on 17/05/2016.
  Copyright © 2016 Cesar Valdez. All rights reserved.</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>
-<span class="hljs-meta">#ifndef utils_h</span>
-<span class="hljs-meta">#define utils_h</span>
+<span class="hljs-meta">#ifndef utils_hpp</span>
+<span class="hljs-meta">#define utils_hpp</span>
+
+
 
 <span class="hljs-meta">#include <span class="hljs-meta-string">"jvm_global.h"</span></span>
 
+using namespace std;
+
+
 namespace Utils {
     
+
 
     
     template&lt;<span class="hljs-keyword">typename</span> T&gt;
@@ -139,6 +170,28 @@ namespace Utils {
         isNull(args...);
     }
     
+    template &lt;<span class="hljs-keyword">typename</span> Collection&gt;
+    <span class="hljs-keyword">inline</span> <span class="hljs-keyword">bool</span> CheckParams(Collection&amp; values,
+                            vector&lt;string&gt;&amp;&amp; args ) {
+     
+        <span class="hljs-keyword">if</span>(values.size() != args.size())
+            <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+        
+        <span class="hljs-keyword">int</span> index=<span class="hljs-number">0</span>;
+        <span class="hljs-keyword">for</span>(auto arg: values)
+            <span class="hljs-keyword">if</span>(arg-&gt;GetType() != args[index++])
+                <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+        
+        <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+    }
+
+    
+    <span class="hljs-keyword">inline</span> std::string normalizeClassName(std::string&amp;&amp; classname) {
+        std::replace(classname.begin(), classname.end(), <span class="hljs-string">'.'</span>, <span class="hljs-string">'/'</span>);
+        <span class="hljs-keyword">return</span> std::move(classname);
+        
+    }
+    
     template &lt;<span class="hljs-keyword">typename</span> T, <span class="hljs-keyword">typename</span> R&gt;
     std::vector&lt;R&gt; IterateJObjectArray( JEnv env, jobjectArray array, T cb ) {
         
@@ -146,8 +199,8 @@ namespace Utils {
         
         std::vector&lt;R&gt; list;
         
-        
         jint count = env-&gt;GetArrayLength( array );
+        list.reserve(count);
         
         <span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> i=<span class="hljs-number">0</span>; i &lt; count; i++) {
             
@@ -163,10 +216,59 @@ namespace Utils {
             env-&gt;DeleteLocalRef( element );
         }
         <span class="hljs-keyword">return</span> list;
+    };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>Iterate a objectArray and apply a function, the loop breaks when T return true.
+useful for quick linear search.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    template &lt;<span class="hljs-keyword">typename</span> T, <span class="hljs-keyword">typename</span> R&gt;
+    <span class="hljs-keyword">bool</span> Find( JEnv env, jobjectArray array, T cb ) {
+        
+        isNull(array);
+        
+        <span class="hljs-keyword">bool</span> ret = <span class="hljs-literal">false</span>;
+        jint count = env-&gt;GetArrayLength( array );
+        
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> i=<span class="hljs-number">0</span>; i &lt; count; i++) {
+            
+            jobject element = env-&gt;GetObjectArrayElement(array, i);
+            
+            <span class="hljs-keyword">if</span>((ret = cb( env, element )))
+                <span class="hljs-keyword">break</span>;
+            
+            <span class="hljs-keyword">if</span>(env-&gt;ExceptionOccurred())
+                env-&gt;ExceptionDescribe();
+            
+            env-&gt;DeleteLocalRef( element );
+        }
+        
+        <span class="hljs-keyword">return</span> ret;
     };
+
     
 }
-<span class="hljs-meta">#endif /* utils.h */</span></pre></div></div>
+
+
+
+
+
+
+
+
+
+
+<span class="hljs-meta">#endif /* utils_hpp */</span></pre></div></div>
             
         </li>
         

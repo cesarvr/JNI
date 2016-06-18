@@ -2,7 +2,7 @@
 
 <html>
 <head>
-  <title>jvm_global.h</title>
+  <title>object.h</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
   <link rel="stylesheet" media="all" href="docco.css" />
@@ -118,7 +118,7 @@
         
           <li id="title">
               <div class="annotation">
-                  <h1>jvm_global.h</h1>
+                  <h1>object.h</h1>
               </div>
           </li>
         
@@ -130,64 +130,103 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-1">&#182;</a>
               </div>
-              <p> jvm_global.h
+              <p> jvm_reflect.h
  LibJNI</p>
-<p> Created by Cesar Valdez on 03/02/2016.
+<p> Created by Cesar Valdez on 26/02/2016.
  Copyright © 2016 Cesar Valdez. All rights reserved.</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>
-<span class="hljs-meta">#ifndef jvm_global_h</span>
-<span class="hljs-meta">#define jvm_global_h</span>
+<span class="hljs-meta">#ifndef jvm_object_hpp</span>
+<span class="hljs-meta">#define jvm_object_hpp</span>
 
-<span class="hljs-meta">#ifdef _WIN32</span>
-	<span class="hljs-meta">#include <span class="hljs-meta-string">&lt;memory&gt;</span></span>
-<span class="hljs-meta">#else</span>
-	<span class="hljs-meta">#include <span class="hljs-meta-string">&lt;dirent.h&gt;</span></span>
-	<span class="hljs-meta">#include <span class="hljs-meta-string">&lt;unistd.h&gt;</span></span>
-<span class="hljs-meta">#endif</span>
 
-<span class="hljs-meta">#ifdef __APPLE__</span>
-    <span class="hljs-meta">#include <span class="hljs-meta-string">&lt;JavaVM/jni.h&gt;</span></span>
-<span class="hljs-meta">#else</span>
-    <span class="hljs-meta">#include <span class="hljs-meta-string">&lt;jni.h&gt;</span></span>
-<span class="hljs-meta">#endif</span>
+<span class="hljs-meta">#include <span class="hljs-meta-string">&lt;algorithm&gt;</span></span>
+<span class="hljs-meta">#include <span class="hljs-meta-string">"reflect.h"</span></span>
+<span class="hljs-meta">#include <span class="hljs-meta-string">"jvm_global.h"</span></span>
+<span class="hljs-meta">#include <span class="hljs-meta-string">"values.h"</span></span>
+<span class="hljs-meta">#include <span class="hljs-meta-string">"jinvoke.h"</span></span>
+<span class="hljs-meta">#include <span class="hljs-meta-string">"jvm_handler.h"</span></span>
+<span class="hljs-meta">#include <span class="hljs-meta-string">"args.h"</span></span>
 
-<span class="hljs-meta">#ifdef __linux__</span>
-  <span class="hljs-meta">#include <span class="hljs-meta-string">&lt;memory&gt;</span></span>
-  <span class="hljs-meta">#include <span class="hljs-meta-string">&lt;dlfcn.h&gt;</span></span>
-  <span class="hljs-meta">#include <span class="hljs-meta-string">&lt;string&gt;</span></span>
-<span class="hljs-meta">#endif</span>
+using namespace LibJNI;
+using namespace std;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>Object encapsulate the java object and a list of methods structures.</p>
 
-<span class="hljs-meta">#include <span class="hljs-meta-string">&lt;iostream&gt;</span></span>
-<span class="hljs-meta">#include <span class="hljs-meta-string">&lt;sstream&gt;</span></span>
-<span class="hljs-meta">#include <span class="hljs-meta-string">&lt;vector&gt;</span></span>
-<span class="hljs-meta">#include <span class="hljs-meta-string">&lt;map&gt;</span></span>
-<span class="hljs-meta">#include <span class="hljs-meta-string">&lt;assert.h&gt;</span></span>
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>template &lt;<span class="hljs-keyword">typename</span> Broker&gt;
+class Object: HandleEnv {
+private:
+  
+    string name;
+    
+    ObjectValue object;
+    ObjectArray methodArray;
+    Broker&amp; broker;
+    
+    <span class="hljs-keyword">void</span> CreateObject(JVMLoader env, string classname, vector&lt;BaseJavaValue *&gt;&amp; arguments);
+    
+public:
+    Object(JVMLoader env, Broker&amp; broker, string className);
+    Object(JVMLoader env, Broker&amp; broker, string className, vector&lt;BaseJavaValue *&gt;&amp;&amp; arguments);
+    
+    vector&lt;string&gt; MethodsNames() {
+        <span class="hljs-keyword">return</span> broker.GetMethods(object);
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>Get a qualified Java name.</p>
 
-<span class="hljs-keyword">struct</span> VMError {
-    std::string errorMessage;
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    string GetName(){
+        <span class="hljs-keyword">return</span> object.GetType();
+    }
+    
+    Method GetMethodDescriptor(string methodName, vector&lt;BaseJavaValue* &gt;&amp;&amp; args) {
+        <span class="hljs-keyword">return</span> broker.MethodDescription(object, methodName, move(args) );
+    }
+
+    ObjectValue&amp; GetObjectValue() { <span class="hljs-keyword">return</span> object;}
+    
+    template &lt;<span class="hljs-keyword">typename</span> T&gt;
+    T Call(string methodName, vector&lt;BaseJavaValue *&gt;&amp;&amp; arguments) {
+        
+        T tmp;
+        JEnv jni = Env();
+        
+        auto method = broker.MethodDescription(object, methodName, move(arguments));
+        
+        auto javaValues = Arguments::GetValues(jni, arguments);
+        
+        <span class="hljs-keyword">if</span>(!tmp.isCompatible( method.returnType  ))
+            throw VMError{<span class="hljs-string">"Not supported type using "</span> +tmp.GetType()+ <span class="hljs-string">" expected "</span> +  method.returnType  };
+        
+        <span class="hljs-keyword">return</span> Invoke::Call&lt;T&gt;(jni, object.Get(), method.method, (jvalue*)&amp;javaValues[<span class="hljs-number">0</span>]);
+    }
 };
 
-
-using JEnv  = <span class="hljs-keyword">const</span> std::shared_ptr&lt;JNIEnv&gt;;
-
-
-<span class="hljs-keyword">const</span> std::string J<span class="hljs-built_in">AVA_METHOD_CLASS</span>(<span class="hljs-string">"java/lang/reflect/Method"</span>);
-<span class="hljs-keyword">const</span> std::string J<span class="hljs-built_in">AVA_STRING_CLASS</span>(<span class="hljs-string">"java/lang/String"</span>);
-<span class="hljs-keyword">const</span> std::string CLASS_DEFAULT_CTS(<span class="hljs-string">"&lt;init&gt;"</span>);
-<span class="hljs-keyword">const</span> std::string VOID_RETURN(<span class="hljs-string">"()V"</span>);
-
-<span class="hljs-keyword">struct</span> Method {
-    jmethodID method = nullptr;
-    std::string returnType;
-    std::vector&lt;std::string&gt; parameters;
-};
-
-
-
-<span class="hljs-meta">#endif /* jvm_global_h */</span></pre></div></div>
+<span class="hljs-meta">#endif /* jvm_reflect_hpp */</span></pre></div></div>
             
         </li>
         

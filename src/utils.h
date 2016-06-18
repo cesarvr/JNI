@@ -86,7 +86,7 @@ namespace Utils {
         return list;
     };
 
-    // Iterate a objectArray and apply a function, if the function return true it finish.
+    // Iterate a objectArray and apply a function, the loop breaks when T return true.
     // useful for quick linear search.
     template <typename T, typename R>
     bool Find( JEnv env, jobjectArray array, T cb ) {
@@ -107,8 +107,7 @@ namespace Utils {
                 env->ExceptionDescribe();
             
             env->DeleteLocalRef( element );
-            
-            }
+        }
         
         return ret;
     };

@@ -127,8 +127,9 @@ void test_add_float_overloading(std::shared_ptr<Object<Server>> object, float x,
     std::cout << "class name: " << object->GetName() << std::endl;
     
     std::vector<LibJNI::BaseJavaValue *> args{&_x, &_y};
-    std::cout << " add " << object->Call<FloatValue>("add", move(args)).Get()
-    << std::endl;
+    auto result = object->Call<FloatValue>("add", move(args)).Get();
+    std::cout << " add " << result << std::endl;
+    assert(result == 5.0);
 }
 
 void test_concat(std::shared_ptr<Object<Server>> jobject, std::string x,
@@ -247,6 +248,25 @@ void ObjectCreationWithStringArgs(JVMLoader &vm, Server server, string msg) {
 
 
 
+void test_information(JVMLoader &vm, Server server) {
+    Object<Server> a(vm, server, "java.lang.String");
+    
+    string mname = "append";
+    auto list = server.MethodDesc(a.GetObjectValue(), mname);
+    
+    for(auto method: list) {
+        cout << "name: " << mname << endl;
+        cout << "return: " << method.returnType << endl;
+        cout << "param: ";
+        for (auto param : method.parameters) {
+            cout << "["<< param << "] ";
+        }
+        cout << "\n\n";
+    }
+        
+    
+}
+
 
 
 
@@ -285,7 +305,7 @@ void testing_reflection_server(JVMLoader& vm){
 //    for(auto method: z)
   //      std::cout << method << std::endl;
 
-    Object<Server> a(vm, server, "java.lang.String");
+   // Object<Server> a(vm, server, "java.lang.String");
     //auto al = a.MethodsNames();
     
     
@@ -404,26 +424,26 @@ int main() {
         vm.Start();
     
         server.SetJVM(vm);
-        
+    
         std::shared_ptr<Object<Server>> _pdf = test_create_pdf_obj(vm, server);
         std::shared_ptr<Object<Server>> _str_buff = test_create_str_buffer(vm,server);
-        
+
         
         //Timing(testing_method_listing, "Listing methods", vm);
         Timing(testing_instance, "Listing methods", vm);
-        /*Timing(testing_method_caching, "method caching", vm);
+        //test_information(vm, server);
+        Timing(testing_method_caching, "method caching", vm);
 
-        
-        //test_add_int(_pdf, 5000, 5000);
+        test_add_int(_pdf, 5000, 5000);
         test_add_int(_pdf, 3, 5);
-        test_add_float_overloading(_pdf, 3.55, 1.5);
+        test_add_float_overloading(_pdf, 3.5, 1.5);
         test_concat(_pdf, "Kobe", "Bryant");
         testing_string_allocation(_str_buff, "Hellow");
-        test_array(_pdf);
+        //test_array(_pdf);
         test_int_array(_pdf);
         ObjectCreationWithStringArgs(vm, server, "Hello world");
         
-        testing_reflection_server(vm);*/
+        testing_reflection_server(vm);
 
     } catch (VMError &error) {
         std::cout << error.errorMessage << std::endl;
