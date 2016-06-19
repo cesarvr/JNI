@@ -11,10 +11,14 @@ FLAGS=-ldl -pthread
 
 default: test
 
-test: build $(OBJ)path.o $(OBJ)args.o $(OBJ)reflect.o $(OBJ)object.o $(OBJ)jvm_handler.o $(OBJ)main.o
-	clang++ $(FLAGS) -o $@ $(OBJ)path.o $(OBJ)args.o $(OBJ)jvm_handler.o $(OBJ)reflect.o $(OBJ)object.o $(OBJ)main.o
+test: build $(OBJ)path.o $(OBJ)args.o $(OBJ)reflect.o $(OBJ)object.o $(OBJ)jvm_handler.o $(OBJ)server.o $(OBJ)main.o
+	clang++ $(FLAGS) -o $@ $(OBJ)path.o $(OBJ)args.o $(OBJ)jvm_handler.o $(OBJ)reflect.o $(OBJ)server.o $(OBJ)object.o $(OBJ)main.o
 
 $(OBJ)main.o: main.cpp  
+	clang++ $(OPTIONS) $(JNI) $(INCLUDE) -o $@ $<
+
+
+$(OBJ)server.o: src/server.cpp src/server.h
 	clang++ $(OPTIONS) $(JNI) $(INCLUDE) -o $@ $<
 
 $(OBJ)jvm_handler.o: src/jvm_handler.cpp src/jvm_handler.h

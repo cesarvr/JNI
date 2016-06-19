@@ -27,7 +27,8 @@ std::vector<std::string> _clzpath = {
 
 #import <pthread.h>
 
-std::vector<std::string> _clzpath = {"../../demo/lib/", "../../demo/PDFHtml/"};
+//std::vector<std::string> _clzpath = {"../../demo/lib/", "../../demo/PDFHtml/"};
+std::vector<std::string> _clzpath = {"../../demo/lib/", "../../demo/bin/"};
 
 #endif
 
