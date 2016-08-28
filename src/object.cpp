@@ -9,6 +9,7 @@
 #include "object.h"
 
 
+
 // Represent an object in java.
 template <typename Broker>
 Object<Broker>::Object(JVMLoader loader,  Broker& broker, std::string className)
@@ -36,6 +37,8 @@ void Object<Broker>::CreateObject(JVMLoader env, std::string className, std::vec
     auto& findclazz = jni->functions->GetMethodID;
     
     auto member = Memoization(name, jni->functions->FindClass, jni, name.c_str());
+    
+    Utils::raiseNullError(member, "Class not found in: " + name);
     
     if(arguments.empty())
         constructor = Memoization(name, findclazz, jni, member,

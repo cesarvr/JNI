@@ -54,7 +54,6 @@ private:
     map<string, vector<string>> names_cache;
     map<string, ObjectValue> class_cache;
     
-    
     JVMLoader jvm;
 };
 

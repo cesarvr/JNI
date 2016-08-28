@@ -20,8 +20,8 @@
 #import <pthread/pthread.h>
 
 std::vector<std::string> _clzpath = {
-    "/Users/cvaldez/Desktop/NWR/java/lib",
-    "/Users/cvaldez/Desktop/NWR/java/PDFHtml/bin"};
+    "/Users/cvaldez/Documents/java_demo/lib",
+    "/Users/cvaldez/Documents/java_demo/bin"};
 
 #else
 
@@ -268,17 +268,6 @@ void test_information(JVMLoader &vm, Server server) {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
 void ObjectCreation(JVMLoader &vm, int size){
     Print("Object creation benchmark 100K");
     Server server;
@@ -431,6 +420,7 @@ int main() {
         
         //Timing(testing_method_listing, "Listing methods", vm);
         Timing(testing_instance, "Listing methods", vm);
+        
         //test_information(vm, server);
         Timing(testing_method_caching, "method caching", vm);
 

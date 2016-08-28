@@ -40,12 +40,10 @@ class Reflect {
     
 public:
     
-    static jmethodID GetMethod(JEnv& env, string className, string method, string returnType );
+    static jmethodID GetMethod(JEnv& env, string className, string method, string returnType);
     static ObjectArray GetMethodsArray(JEnv& env, ObjectValue clazz);
-    
     static ObjectValue GetClass(JEnv& env, ObjectValue& object);
     static std::vector<string> GetMethodsNames(JEnv& env, ObjectArray methods);
-    
     static jmethodID GetMethodReference(string alias, JEnv& env, jobject object);
     
     
